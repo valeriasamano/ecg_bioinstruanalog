@@ -9,20 +9,24 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
-# Configurar Flask para que busque index.html en la carpeta principal
 app = Flask(__name__)
 CORS(app)
 
-def generar_datos_ecg():
+def generar_datos_biomedicos():
+    # Datos ECG (Simulados)
     fs = 250  
     tiempo = np.linspace(0, 10, fs * 10)
     ecg = 0.5 * np.sin(2 * np.pi * 1.2 * tiempo)
     for i in range(1, 11):
         ecg += 1.6 * np.exp(-((tiempo - i)**2) / 0.004)
-    ruido = np.random.normal(0, 0.04, len(tiempo))
-    return tiempo.tolist(), (ecg + ruido).tolist()
+    ruido = np.random.normal(0, 0.03, len(tiempo))
+    voltaje = (ecg + ruido).tolist()
+    
+    # Datos Termómetro (Simulados estables alrededor de 36.7°C con ligeras variaciones)
+    temperatura = (36.5 + np.random.normal(0.2, 0.05, len(tiempo))).tolist()
+    
+    return tiempo.tolist(), voltaje, temperatura
 
-# ESTA ES LA NUEVA RUTA: Sirve la interfaz visual directamente en Render
 @app.route('/', methods=['GET'])
 def home():
     try:
@@ -32,16 +36,26 @@ def home():
     except Exception as e:
         return f"Error al cargar la interfaz visual: {str(e)}", 500
 
-@app.route('/api/ecg', methods=['GET'])
-def obtener_ecg():
-    tiempos, amplitudes = generar_datos_ecg()
-    return jsonify({"tiempo": tiempos, "voltaje": amplitudes})
+@app.route('/api/biomedicos', methods=['GET'])
+def obtener_datos():
+    tiempos, voltaje, temperatura = generar_datos_biomedicos()
+    return jsonify({
+        "tiempo": tiempos, 
+        "voltaje": voltaje,
+        "temperatura": temperatura,
+        "temp_actual": round(temperatura[-1], 1),
+        "bpm": 72
+    })
 
 @app.route('/api/descargar', methods=['GET'])
 def descargar_excel():
-    tiempos, amplitudes = generar_datos_ecg()
-    df = pd.DataFrame({"Tiempo (s)": tiempos, "Voltaje (mV)": amplitudes})
-    filename = "/tmp/reporte_ecg.xlsx" if os.name != 'nt' else "reporte_ecg.xlsx"
+    tiempos, voltaje, temperatura = generar_datos_biomedicos()
+    df = pd.DataFrame({
+        "Tiempo (s)": tiempos, 
+        "ECG Voltaje (mV)": voltaje,
+        "Temperatura (°C)": temperatura
+    })
+    filename = "/tmp/reporte_clinico.xlsx" if os.name != 'nt' else "reporte_clinico.xlsx"
     df.to_excel(filename, index=False)
     return send_file(filename, as_attachment=True)
 
@@ -54,27 +68,31 @@ def enviar_correo():
     if not correo_doctor:
         return jsonify({"status": "error", "message": "Falta el correo."}), 400
 
-    REMITENTE = os.environ.get("EMAIL_REMITENTE", "tu_correo@gmail.com")
-    PASSWORD = os.environ.get("EMAIL_PASSWORD", "tu_contraseña_de_aplicacion")
+    REMITENTE = os.environ.get("EMAIL_REMITENTE", "")
+    PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
 
-    tiempos, amplitudes = generar_datos_ecg()
-    df = pd.DataFrame({"Tiempo (s)": tiempos, "Voltaje (mV)": amplitudes})
-    filepath = "/tmp/reporte_medico_ecg.xlsx" if os.name != 'nt' else "reporte_medico_ecg.xlsx"
+    tiempos, voltaje, temperatura = generar_datos_biomedicos()
+    df = pd.DataFrame({
+        "Tiempo (s)": tiempos, 
+        "ECG Voltaje (mV)": voltaje,
+        "Temperatura (°C)": temperatura
+    })
+    filepath = "/tmp/reporte_clinico.xlsx" if os.name != 'nt' else "reporte_clinico.xlsx"
     df.to_excel(filepath, index=False)
 
     msg = MIMEMultipart()
     msg['From'] = REMITENTE
     msg['To'] = correo_doctor
-    msg['Subject'] = f"Monitoreo ECG - {nombre_paciente}"
+    msg['Subject'] = f"Reporte Clínico Multimodal (ECG + Temp) - {nombre_paciente}"
 
-    cuerpo = f"Adjunto reporte del paciente: {nombre_paciente}."
+    cuerpo = f"Adjunto se encuentra el reporte clínico del paciente: {nombre_paciente}.\nSensores incluidos: Electrocardiógrafo analógico y Termómetro digital."
     msg.attach(MIMEText(cuerpo, 'plain'))
 
     with open(filepath, "rb") as adjunto:
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(adjunto.read())
         encoders.encode_base64(part)
-        part.add_header('Content-Disposition', f"attachment; filename= ECG_{nombre_paciente}.xlsx")
+        part.add_header('Content-Disposition', f"attachment; filename= Reporte_{nombre_paciente}.xlsx")
         msg.attach(part)
 
     try:
@@ -83,7 +101,7 @@ def enviar_correo():
         server.login(REMITENTE, PASSWORD)
         server.sendmail(REMITENTE, correo_doctor, msg.as_string())
         server.quit()
-        return jsonify({"status": "success", "message": "¡Reporte enviado!"})
+        return jsonify({"status": "success", "message": "¡Reporte enviado con éxito!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
