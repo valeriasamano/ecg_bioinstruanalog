@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, send_file, request
+from flask import Flask, jsonify, send_file, request, render_template_string
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
+# Configurar Flask para que busque index.html en la carpeta principal
 app = Flask(__name__)
 CORS(app)
 
@@ -20,6 +21,16 @@ def generar_datos_ecg():
         ecg += 1.6 * np.exp(-((tiempo - i)**2) / 0.004)
     ruido = np.random.normal(0, 0.04, len(tiempo))
     return tiempo.tolist(), (ecg + ruido).tolist()
+
+# ESTA ES LA NUEVA RUTA: Sirve la interfaz visual directamente en Render
+@app.route('/', methods=['GET'])
+def home():
+    try:
+        with open('index.html', 'r', encoding='utf-8') as f:
+            contenido_html = f.read()
+        return render_template_string(contenido_html)
+    except Exception as e:
+        return f"Error al cargar la interfaz visual: {str(e)}", 500
 
 @app.route('/api/ecg', methods=['GET'])
 def obtener_ecg():
