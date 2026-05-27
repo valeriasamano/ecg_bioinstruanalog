@@ -1,6 +1,6 @@
-Flask
-flask-cors
-pandas
-openpyxl
-numpy
-gunicorn
+Flask==3.0.3
+flask-cors==4.0.1
+numpy==1.26.4
+pandas==2.2.2
+openpyxl==3.1.2
+gunicorn==22.0.0
