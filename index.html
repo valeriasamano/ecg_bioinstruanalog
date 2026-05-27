@@ -19,7 +19,7 @@
             }
             30% {
                 transform: scale(1.15);
-                background-color: #FCA5A5; /* Tono pálido en el pico del latido */
+                background-color: #FCA5A5;
                 box-shadow: 0 0 25px rgba(239, 68, 68, 0.9);
             }
             60% {
@@ -29,7 +29,7 @@
             }
             100% {
                 transform: scale(0.98);
-                background-color: #FEE2E2; /* Apagado / Pálido en el intervalo R-R */
+                background-color: #FEE2E2;
                 box-shadow: 0 0 4px rgba(239, 68, 68, 0.2);
             }
         }
@@ -101,7 +101,7 @@
                     <span class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">Live Stream</span>
                 </div>
                 
-                <div class="h-64 w-full mb-4">
+                <div class="h-72 w-full mb-4">
                     <canvas id="chartECG"></canvas>
                 </div>
 
@@ -166,7 +166,6 @@
                     Enviar Datos de Paciente
                 </button>
             </div>
-            
             <div id="statusAlert" class="mt-4 px-4 py-2.5 rounded-xl text-sm font-semibold hidden"></div>
         </div>
 
@@ -177,18 +176,17 @@
         let ecgChart;
         let corrienteTemperatura = 36.7;
 
-        // Función para colocar la fecha real del sistema
         function establecerFechaActual() {
             const opciones = { day: 'numeric', month: 'short', year: 'numeric' };
             const hoy = new Date();
-            document.getElementById('fechaActual').innerText = hoy.toLocaleDateString('en-GB', opciones); // Formato "26 May 2026"
+            document.getElementById('fechaActual').innerText = hoy.toLocaleDateString('en-GB', opciones);
         }
 
         document.getElementById('nombrePaciente').addEventListener('input', (e) => {
             document.getElementById('saludoNombre').innerText = e.target.value || "Paciente";
         });
 
-        // RENDERIZADO DEL TERMÓMETRO VERTICAL ANALÓGICO
+        // DIBUJO DEL TERMÓMETRO VERTICAL (DISEÑO LIMPIO, SIN FLECHA INDICADORA)
         function dibujarTermometroVertical(temp) {
             const canvas = document.getElementById('verticalThermometer');
             if (!canvas) return;
@@ -196,16 +194,16 @@
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const x = canvas.width / 2 - 10; // Centro del tubo
-            const topY = 20;                 // Extremo superior del tubo
-            const bottomY = 190;             // Base superior del bulbo
+            const x = canvas.width / 2 - 10; 
+            const topY = 20;                 
+            const bottomY = 190;             
             const tuboHeight = bottomY - topY;
             const tuboWidth = 16;
             const bulboRadius = 18;
             const bulboX = x + tuboWidth / 2;
             const bulboY = bottomY + bulboRadius - 2;
 
-            // 1. Dibujar contorno de fondo del canal de vidrio
+            // 1. Contorno estructural del canal de vidrio
             ctx.beginPath();
             ctx.moveTo(x, bottomY);
             ctx.lineTo(x, topY + tuboWidth / 2);
@@ -219,20 +217,19 @@
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // 2. Calcular llenado según temperatura (Escala: 20°C a 45°C)
+            // 2. Cálculo dinámico de la columna de mercurio/fluido (20°C a 45°C)
             const minTemp = 20;
             const maxTemp = 45;
             let fraccion = (temp - minTemp) / (maxTemp - minTemp);
-            fraccion = Math.max(0, Math.min(1, fraccion)); // Limitar rango
+            fraccion = Math.max(0, Math.min(1, fraccion)); 
             const fillHeight = fraccion * tuboHeight;
             const currentFillY = bottomY - fillHeight;
 
-            // Definir color del fluido dinámico basado en temperatura
-            let colorFluido = '#3B82F6'; // Azul (Frio)
-            if (temp >= 36 && temp <= 37.5) colorFluido = '#10B981'; // Verde (Normal)
-            else if (temp > 37.5) colorFluido = '#EF4444'; // Rojo (Fiebre)
+            let colorFluido = '#3B82F6'; 
+            if (temp >= 36 && temp <= 37.5) colorFluido = '#10B981'; 
+            else if (temp > 37.5) colorFluido = '#EF4444'; 
 
-            // 3. Rellenar el fluido interno en el tubo de vidrio
+            // 3. Relleno exacto del fluido en el capilar
             ctx.fillStyle = colorFluido;
             ctx.beginPath();
             ctx.moveTo(x + 2, bottomY);
@@ -242,12 +239,12 @@
             ctx.closePath();
             ctx.fill();
 
-            // Rellenar el bulbo esférico inferior
+            // Relleno del bulbo contenedor inferior
             ctx.beginPath();
             ctx.arc(bulboX, bulboY, bulboRadius - 2, 0, 2 * Math.PI);
             ctx.fill();
 
-            // 4. Dibujar líneas de escala graduada al costado izquierdo
+            // 4. Marcas e indicadores de escala graduada lateral
             ctx.strokeStyle = '#64748B';
             ctx.lineWidth = 1;
             ctx.font = 'bold 9px Plus Jakarta Sans';
@@ -264,32 +261,16 @@
                 ctx.stroke();
                 ctx.fillText(marca + "°", x - 26, markY + 3);
             });
-
-            // 5. Aguja horizontal indicadora en el nivel exacto actual (Lado Derecho)
-            ctx.strokeStyle = '#1E293B';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(x + tuboWidth + 1, currentFillY);
-            ctx.lineTo(x + tuboWidth + 15, currentFillY);
-            ctx.stroke();
-
-            // Punta de la aguja indicadora
-            ctx.beginPath();
-            ctx.moveTo(x + tuboWidth + 1, currentFillY);
-            ctx.lineTo(x + tuboWidth + 5, currentFillY - 3);
-            ctx.lineTo(x + tuboWidth + 5, currentFillY + 3);
-            ctx.fillStyle = '#1E293B';
-            ctx.fill();
         }
 
         function generarDatosRespaldo() {
             let tiempo = [], voltaje = [];
-            for (let i = 0; i < 150; i++) {
+            for (let i = 0; i < 100; i++) {
                 let t = i * 0.02;
                 tiempo.push(t.toFixed(2));
-                let v = 0.4 * Math.sin(2 * Math.PI * 1.2 * t);
-                if (i % 40 === 0) v += 1.4;
-                voltaje.push(v + (Math.random() - 0.5) * 0.04);
+                let v = 0.3 * Math.sin(2 * Math.PI * 1.3 * t);
+                if (i % 35 === 0) v += 1.5; // Pico Complejo QRS ficticio
+                voltaje.push(v + (Math.random() - 0.5) * 0.03);
             }
             return { tiempo, voltaje };
         }
@@ -300,14 +281,48 @@
 
             ecgChart = new Chart(ctxECG, {
                 type: 'line',
-                data: { labels: respaldo.tiempo, datasets: [{
-                    label: 'Voltaje (mV)', data: respaldo.voltaje,
-                    borderColor: '#EF4444', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.1
-                }]},
+                data: { 
+                    labels: respaldo.tiempo, 
+                    datasets: [{
+                        label: 'Voltaje', 
+                        data: respaldo.voltaje,
+                        borderColor: '#EF4444', 
+                        borderWidth: 2, 
+                        pointRadius: 0, 
+                        fill: false, 
+                        tension: 0.1
+                    }]
+                },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { x: { display: false }, y: { min: -0.5, max: 2.0, grid: { color: '#F1F5F9' } } }
+                    scales: { 
+                        // CONFIGURACIÓN DE EJES Y UNIDADES ADICIONADAS
+                        x: { 
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Time (s)',
+                                color: '#64748B',
+                                font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
+                            },
+                            grid: { color: '#F1F5F9' },
+                            ticks: { color: '#64748B', maxTicksLimit: 10 }
+                        }, 
+                        y: { 
+                            min: -0.5, 
+                            max: 2.0, 
+                            title: {
+                                display: true,
+                                text: 'ECG Voltage (mV)',
+                                color: '#64748B',
+                                font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
+                            },
+                            grid: { color: '#F1F5F9' },
+                            ticks: { color: '#64748B' }
+                        } 
+                    }
                 }
             });
 
@@ -323,7 +338,6 @@
                     document.getElementById('liveTemp').innerText = data.temp_actual;
                     document.getElementById('liveBPM').innerText = data.bpm;
                     
-                    // Sincronizar velocidad del latido del corazón con los BPM de la API
                     const duracionLatido = (60 / data.bpm).toFixed(2);
                     document.getElementById('heartBeater').style.animationDuration = `${duracionLatido}s`;
                     
@@ -335,8 +349,8 @@
                     dibujarTermometroVertical(corrienteTemperatura);
                 }
             } catch (error) {
-                // Modo respaldo en caso de desconexión del backend
-                corrienteTemperatura = (36.5 + Math.random() * 0.4);
+                // Algoritmo de oscilación simulada en caso de pérdida de conexión
+                corrienteTemperatura = (36.6 + Math.random() * 0.3);
                 document.getElementById('liveTemp').innerText = corrienteTemperatura.toFixed(1);
                 dibujarTermometroVertical(corrienteTemperatura);
             }
