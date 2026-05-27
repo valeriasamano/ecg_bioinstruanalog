@@ -81,9 +81,16 @@
             </div>
         </header>
 
-        <div class="mb-8">
-            <h2 id="contenedorSaludo" class="text-3xl font-extrabold text-slate-900 tracking-tight">¡Hola! <span id="saludoNombre" class="text-blue-600">Comenzar mediciones</span></h2>
-            <p class="text-slate-500 font-medium mt-1">Monitoreo de señales vitales: ECG (actividad eléctrica del corazón) & Termómetro (temperatura corporal).</p>
+        <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 id="contenedorSaludo" class="text-3xl font-extrabold text-slate-900 tracking-tight">¡Hola! <span id="saludoNombre" class="text-blue-600">Comenzar mediciones</span></h2>
+                <p class="text-slate-500 font-medium mt-1">Monitoreo de señales vitales: ECG (actividad eléctrica del corazón) & Termómetro (temperatura corporal).</p>
+            </div>
+            <div>
+                <button id="btnRegistrar" onclick="toggleRegistro()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition-all text-sm flex items-center gap-2">
+                    <span>🟢 Iniciar Registro</span>
+                </button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -162,6 +169,10 @@
         const BACKEND_URL = window.location.origin; 
         let ecgChart;
         let corrienteTemperatura = 36.7;
+        
+        // Configuración de exclusividad: define aquí la contraseña para el operador autorizado
+        const PALABRA_CLAVE_MEDICO = "BioMedica2026"; 
+        let registrandoActivo = false;
 
         function establecerFechaActual() {
             const opciones = { day: 'numeric', month: 'short', year: 'numeric' };
@@ -179,6 +190,45 @@
                 contenedor.innerHTML = 'Hola, <span id="saludoNombre">' + e.target.value + '</span>';
             }
         });
+
+        // NUEVA FUNCIÓN PARA EXCLUSIVIDAD DEL BOTÓN
+        function verificarAutorizacion() {
+            // Revisa si este navegador específico ya fue desbloqueado previamente
+            if (localStorage.getItem("medicoAutorizado") === "true") {
+                return true;
+            }
+
+            // Si no está desbloqueado, solicita la palabra clave
+            const intento = prompt("Ingrese la clave médica para controlar el registro de datos:");
+            if (intento === PALABRA_CLAVE_MEDICO) {
+                localStorage.setItem("medicoAutorizado", "true");
+                return true;
+            } else {
+                alert("Acceso denegado. Solo el personal autorizado puede iniciar o detener el registro.");
+                return false;
+            }
+        }
+
+        // NUEVA FUNCIÓN PARA ACCIONAR EL REGISTRO
+        function toggleRegistro() {
+            if (!verificarAutorizacion()) return;
+
+            const btn = document.getElementById('btnRegistrar');
+            registrandoActivo = !registrandoActivo;
+
+            if (registrandoActivo) {
+                btn.innerHTML = '<span>🛑 Detener Registro</span>';
+                btn.className = "bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition-all text-sm flex items-center gap-2";
+                console.log("Registro de datos iniciado en el backend...");
+                // Aquí puedes agregar un fetch si tu backend necesita enterarse del inicio de grabación:
+                // fetch(`${BACKEND_URL}/api/registro/iniciar`, { method: 'POST' });
+            } else {
+                btn.innerHTML = '<span>🟢 Iniciar Registro</span>';
+                btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition-all text-sm flex items-center gap-2";
+                console.log("Registro de datos detenido.");
+                // fetch(`${BACKEND_URL}/api/registro/detener`, { method: 'POST' });
+            }
+        }
 
         function dibujarTermometroVertical(temp) {
             const canvas = document.getElementById('verticalThermometer');
