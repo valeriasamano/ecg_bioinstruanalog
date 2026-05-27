@@ -181,8 +181,8 @@
 
         <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-sm w-full">
             <div class="mb-6">
-                <h3 class="text-xl font-bold text-slate-900 tracking-tight">Tarjetas de Repaso Clínico</h3>
-                <p class="text-slate-400 text-sm font-medium">Haz clic en cualquier tarjeta para voltearla y revisar la interpretación fisiológica básica.</p>
+                <h3 class="text-xl font-bold text-slate-900 tracking-tight">Guía Informativa para el Paciente</h3>
+                <p class="text-slate-400 text-sm font-medium">Haz clic en cada tarjeta para conocer qué significan tus valores y cuáles son los rangos normales.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -190,14 +190,14 @@
                 <div class="w-full h-48 perspective-1000 cursor-pointer" onclick="voltearTarjeta(this)">
                     <div class="w-full h-full relative preserve-3d transition-transform duration-500 rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 hover:shadow-md">
                         <div class="absolute inset-0 backface-hidden p-5 flex flex-col justify-between">
-                            <span class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">ECG</span>
-                            <p class="text-base font-bold text-slate-800 text-center my-auto">Complejo QRS</p>
-                            <span class="text-[11px] text-slate-400 text-center font-medium">Click para voltear 🔄</span>
+                            <span class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Tu Corazón</span>
+                            <p class="text-base font-bold text-slate-800 text-center my-auto">¿Qué es el pulso o Frecuencia Cardíaca?</p>
+                            <span class="text-[11px] text-slate-400 text-center font-medium">Ver respuesta 🔄</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 p-5 bg-slate-900 rounded-2xl text-white flex flex-col justify-between">
-                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Respuesta</span>
-                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">Representa la despolarización de los ventrículos cardíacos. Su duración normal óptima suele ser menor a 0.10 segundos.</p>
-                            <span class="text-[10px] text-slate-400 text-center">Fisiología Cardíaca</span>
+                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Explicación</span>
+                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">Es el número de veces que tu corazón late en un minuto (lpm). En reposo, lo normal y saludable para un adulto es estar entre 60 y 100 lpm.</p>
+                            <span class="text-[10px] text-slate-400 text-center">Rango Normal: 60 - 100 lpm</span>
                         </div>
                     </div>
                 </div>
@@ -205,14 +205,14 @@
                 <div class="w-full h-48 perspective-1000 cursor-pointer" onclick="voltearTarjeta(this)">
                     <div class="w-full h-full relative preserve-3d transition-transform duration-500 rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 hover:shadow-md">
                         <div class="absolute inset-0 backface-hidden p-5 flex flex-col justify-between">
-                            <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Termorregulación</span>
-                            <p class="text-base font-bold text-slate-800 text-center my-auto">Normotermia vs. Fiebre</p>
-                            <span class="text-[11px] text-slate-400 text-center font-medium">Click para voltear 🔄</span>
+                            <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Tu Temperatura</span>
+                            <p class="text-base font-bold text-slate-800 text-center my-auto">¿Cuándo se considera fiebre?</p>
+                            <span class="text-[11px] text-slate-400 text-center font-medium">Ver respuesta 🔄</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 p-5 bg-slate-900 rounded-2xl text-white flex flex-col justify-between">
-                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Respuesta</span>
-                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">Normotermia basal oscila entre 36.5°C y 37.2°C. Valores por encima de 38.0°C se consideran pirexia (fiebre clínica).</p>
-                            <span class="text-[10px] text-slate-400 text-center">Signos Vitales</span>
+                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Explicación</span>
+                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">La temperatura normal del cuerpo está entre 36.5°C y 37.2°C. Si sube de 37.5°C es febrícula (un aviso), y a partir de 38.0°C ya es fiebre clínica.</p>
+                            <span class="text-[10px] text-slate-400 text-center">Normal: 36.5°C - 37.2°C</span>
                         </div>
                     </div>
                 </div>
@@ -220,14 +220,14 @@
                 <div class="w-full h-48 perspective-1000 cursor-pointer" onclick="voltearTarjeta(this)">
                     <div class="w-full h-full relative preserve-3d transition-transform duration-500 rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 hover:shadow-md">
                         <div class="absolute inset-0 backface-hidden p-5 flex flex-col justify-between">
-                            <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Ritmo</span>
-                            <p class="text-base font-bold text-slate-800 text-center my-auto">Ritmo Sinusal</p>
-                            <span class="text-[11px] text-slate-400 text-center font-medium">Click para voltear 🔄</span>
+                            <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">El Gráfico</span>
+                            <p class="text-base font-bold text-slate-800 text-center my-auto">¿Qué significan las líneas del ECG?</p>
+                            <span class="text-[11px] text-slate-400 text-center font-medium">Ver respuesta 🔄</span>
                         </div>
                         <div class="absolute inset-0 backface-hidden rotate-y-180 p-5 bg-slate-900 rounded-2xl text-white flex flex-col justify-between">
-                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Respuesta</span>
-                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">Ritmo cardíaco normal originado en el nodo sinoauricular. Se caracteriza por la presencia constante de la onda P antes de cada complejo QRS.</p>
-                            <span class="text-[10px] text-slate-400 text-center">Electrocardiografía</span>
+                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Explicación</span>
+                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">Muestran la actividad eléctrica de tu corazón en tiempo real. Cada "pico" alto representa un latido que bombea sangre a tu cuerpo de forma ordenada.</p>
+                            <span class="text-[10px] text-slate-400 text-center">Ritmo Sinusal = Ritmo Normal</span>
                         </div>
                     </div>
                 </div>
@@ -245,7 +245,6 @@
         const PALABRA_CLAVE_MEDICO = "BioMedica2026"; 
         let registrandoActivo = false;
 
-        // Configuración de la fecha formateada nativamente en Español
         function establecerFechaActual() {
             const opciones = { day: 'numeric', month: 'short', year: 'numeric' };
             const hoy = new Date();
@@ -263,7 +262,6 @@
             }
         });
 
-        // Función interactiva para voltear las flashcards
         function voltearTarjeta(elemento) {
             const cardInner = elemento.querySelector('.preserve-3d');
             cardInner.classList.toggle('rotate-y-180');
@@ -281,7 +279,7 @@
             } else {
                 alert("Acceso denegado. Solo el personal autorizado puede iniciar o detener el registro.");
                 return false;
-            }
+            }Verification
         }
 
         function toggleRegistro() {
