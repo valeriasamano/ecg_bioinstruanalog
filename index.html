@@ -10,31 +10,13 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
         
-        /* Animación del Corazón LED (Latido con Efecto de Resplandor) */
         @keyframes ledPulse {
-            0% {
-                transform: scale(1);
-                background-color: #EF4444;
-                box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
-            }
-            30% {
-                transform: scale(1.15);
-                background-color: #FCA5A5;
-                box-shadow: 0 0 25px rgba(239, 68, 68, 0.9);
-            }
-            60% {
-                transform: scale(1);
-                background-color: #EF4444;
-                box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
-            }
-            100% {
-                transform: scale(0.98);
-                background-color: #FEE2E2;
-                box-shadow: 0 0 4px rgba(239, 68, 68, 0.2);
-            }
+            0% { transform: scale(1); background-color: #EF4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.7); }
+            30% { transform: scale(1.15); background-color: #FCA5A5; box-shadow: 0 0 25px rgba(239, 68, 68, 0.9); }
+            60% { transform: scale(1); background-color: #EF4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.7); }
+            100% { transform: scale(0.98); background-color: #FEE2E2; box-shadow: 0 0 4px rgba(239, 68, 68, 0.2); }
         }
 
-        /* Figura de Corazón CSS Puro y Simétrico */
         .heart-shape {
             position: relative;
             width: 24px;
@@ -45,16 +27,9 @@
             display: inline-block;
         }
 
-        .heart-shape::before,
-        .heart-shape::after {
-            content: "";
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            background-color: inherit;
-            border-radius: 50%;
+        .heart-shape::before, .heart-shape::after {
+            content: ""; position: absolute; width: 24px; height: 24px; background-color: inherit; border-radius: 50%;
         }
-
         .heart-shape::before { top: -12px; left: 0; }
         .heart-shape::after { top: 0; left: 12px; }
     </style>
@@ -80,7 +55,6 @@
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-            
             <div class="xl:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-4">
@@ -109,7 +83,7 @@
                     </div>
                     <div class="col-span-2 md:col-span-1">
                         <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2.5 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
-                            📥 Download Report (Excel)
+                            📥 Download Report (CSV)
                         </button>
                     </div>
                 </div>
@@ -128,7 +102,6 @@
                     <div class="relative w-24 h-full flex justify-center">
                         <canvas id="verticalThermometer" width="90" height="240"></canvas>
                     </div>
-                    
                     <div class="text-left">
                         <div class="flex items-baseline gap-1">
                             <span id="liveTemp" class="text-5xl font-black text-slate-900 tracking-tight">36.7</span>
@@ -151,7 +124,7 @@
 
         <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-900/10">
             <h4 class="text-lg font-bold mb-2">📧 Telemedicina: Envío Automatizado a Especialista</h4>
-            <p class="text-slate-400 text-sm mb-4 font-medium">Empaqueta las series de tiempo procesadas en tu servidor de Render de forma inmediata mediante sockets/REST.</p>
+            <p class="text-slate-400 text-sm mb-4 font-medium">Empaqueta las series de tiempo procesadas en tu servidor de Render de forma inmediata.</p>
             
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="email" id="correoDoctor" class="flex-1 px-5 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="correo.medico@gmail.com">
@@ -165,7 +138,6 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE TU ENDPOINT DE RENDER (PUNTO 2 VINCULADO)
         const BACKEND_URL = "https://ecg-bioinstruanalog.onrender.com"; 
         let ecgChart;
         let corrienteTemperatura = 36.7;
@@ -180,19 +152,16 @@
             document.getElementById('saludoNombre').innerText = e.target.value || "Paciente";
         });
 
-        // DIBUJO DEL TERMÓMETRO VERTICAL ANALÓGICO LIMPIO (SIN AGUJA INDICADORA)
         function dibujarTermometroVertical(temp) {
             const canvas = document.getElementById('verticalThermometer');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const x = canvas.width / 2 - 10; 
-            const topY = 20; const bottomY = 190;             
+            const x = canvas.width / 2 - 10; const topY = 20; const bottomY = 190;             
             const tuboHeight = bottomY - topY; const tuboWidth = 16;
             const bulboRadius = 18; const bulboX = x + tuboWidth / 2; const bulboY = bottomY + bulboRadius - 2;
 
-            // Contorno del capilar
             ctx.beginPath();
             ctx.moveTo(x, bottomY); ctx.lineTo(x, topY + tuboWidth / 2);
             ctx.arc(x + tuboWidth / 2, topY + tuboWidth / 2, tuboWidth / 2, Math.PI, 0, false);
@@ -202,7 +171,6 @@
             ctx.fillStyle = '#E2E8F0'; ctx.fill();
             ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = 1.5; ctx.stroke();
 
-            // Altura dinámica del fluido (Rango: 20°C a 45°C)
             const minTemp = 20; const maxTemp = 45;
             let fraccion = (temp - minTemp) / (maxTemp - minTemp);
             fraccion = Math.max(0, Math.min(1, fraccion)); 
@@ -213,17 +181,14 @@
             if (temp >= 36 && temp <= 37.5) colorFluido = '#10B981'; 
             else if (temp > 37.5) colorFluido = '#EF4444'; 
 
-            // Relleno de la columna de líquido uniforme
             ctx.fillStyle = colorFluido;
             ctx.beginPath();
             ctx.moveTo(x + 2, bottomY); ctx.lineTo(x + 2, currentFillY);
             ctx.lineTo(x + tuboWidth - 2, currentFillY); ctx.lineTo(x + tuboWidth - 2, bottomY);
             ctx.closePath(); ctx.fill();
 
-            // Relleno del bulbo inferior
             ctx.beginPath(); ctx.arc(bulboX, bulboY, bulboRadius - 2, 0, 2 * Math.PI); ctx.fill();
 
-            // Líneas de escala graduada lateral
             ctx.strokeStyle = '#64748B'; ctx.lineWidth = 1;
             ctx.font = 'bold 9px Plus Jakarta Sans'; ctx.fillStyle = '#64748B';
 
@@ -266,18 +231,12 @@
                     scales: { 
                         x: { 
                             display: true,
-                            title: {
-                                display: true, text: 'Time (s)', color: '#64748B',
-                                font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
-                            },
+                            title: { display: true, text: 'Time (s)', color: '#64748B', font: { size: 11, weight: 'bold' } },
                             grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', maxTicksLimit: 10 }
                         }, 
                         y: { 
                             min: -0.5, max: 2.0, 
-                            title: {
-                                display: true, text: 'ECG Voltage (mV)', color: '#64748B',
-                                font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
-                            },
+                            title: { display: true, text: 'ECG Voltage (mV)', color: '#64748B', font: { size: 11, weight: 'bold' } },
                             grid: { color: '#F1F5F9' }, ticks: { color: '#64748B' }
                         } 
                     }
@@ -291,7 +250,6 @@
                 const response = await fetch(`${BACKEND_URL}/api/biomedicos`);
                 if (response.ok) {
                     const data = await response.json();
-                    
                     document.getElementById('liveTemp').innerText = data.temp_actual;
                     document.getElementById('liveBPM').innerText = data.bpm;
                     
@@ -306,7 +264,6 @@
                     dibujarTermometroVertical(corrienteTemperatura);
                 }
             } catch (error) {
-                // Caída suave (Fallback dinámico si el server se está reiniciando)
                 corrienteTemperatura = (36.6 + Math.random() * 0.2);
                 document.getElementById('liveTemp').innerText = corrienteTemperatura.toFixed(1);
                 dibujarTermometroVertical(corrienteTemperatura);
@@ -337,7 +294,7 @@
                 const res = await response.json();
 
                 if (res.status === "success") {
-                    alerta("¡Reporte clínico enviado con éxito al especialista!", "bg-green-500/20 text-green-400 border border-green-500/30");
+                    alerta("¡Reporte clínico enviado con éxito!", "bg-green-500/20 text-green-400 border border-green-500/30");
                 } else {
                     alerta("Error: " + res.message, "bg-red-500/20 text-red-400 border border-red-500/30");
                 }
