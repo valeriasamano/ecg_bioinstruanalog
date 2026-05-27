@@ -3,6 +3,8 @@ import random
 import math
 from flask import Flask, jsonify, send_file, request, render_template_string
 from flask_cors import CORS
+import pandas as pd
+import numpy as np
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -13,23 +15,22 @@ app = Flask(__name__)
 CORS(app)
 
 def generar_datos_biomedicos():
-    tiempo = []
+    # Usamos numpy para generar los pasos de tiempo exactos de la serie analógica
+    puntos = 300
+    tiempo = np.round(np.arange(puntos) * 0.02, 2).tolist()
     voltaje = []
     temperatura = []
     
-    # Generar 300 puntos de datos (Simulación analógica de ECG y Termómetro)
-    for i in range(300):
-        t = i * 0.02
-        tiempo.append(round(t, 2))
-        
+    for i in range(puntos):
+        t = tiempo[i]
         # Simulación de onda ECG base
         v = 0.5 * math.sin(2 * math.pi * 1.2 * t)
         if i % 50 == 0: v += 1.5  # Complejo QRS (Onda R)
         if (i - 2) % 50 == 0: v -= 0.3 # Onda S
-        v += random.normalvariate(0, 0.03) # Ruido analógico
+        v += random.normalvariate(0, 0.03) # Ruido de fondo
         voltaje.append(round(v, 3))
         
-        # Simulación de Temperatura estable a 36.7°C
+        # Simulación de Temperatura estable
         temp = 36.5 + random.normalvariate(0.2, 0.05)
         temperatura.append(round(temp, 1))
         
@@ -60,17 +61,19 @@ def descargar_reporte():
     tiempo, voltaje, temperatura = generar_datos_biomedicos()
     filename = "/tmp/reporte_clinico.csv" if os.name != 'nt' else "reporte_clinico.csv"
     
-    # Construcción nativa de CSV para evitar dependencias de Pandas
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write("Tiempo (s),ECG Voltaje (mV),Temperatura (C)\n")
-        for t, v, temp in zip(tiempo, voltaje, temperatura):
-            f.write(f"{t},{v},{temp}\n")
+    # Generación estructurada con DataFrame de Pandas
+    df = pd.DataFrame({
+        "Tiempo (s)": tiempo,
+        "ECG Voltaje (mV)": voltaje,
+        "Temperatura (C)": temperatura
+    })
+    df.to_csv(filename, index=False, encoding='utf-8')
             
     return send_file(filename, as_attachment=True, download_name="reporte_clinico.csv")
 
 @app.route('/api/enviar-correo', methods=['POST'])
 def enviar_correo():
-    datos = request.json
+    datos = request.json or {}
     correo_doctor = datos.get("correo_doctor", "")
     nombre_paciente = datos.get("nombre_paciente", "Valeria Sámano")
 
@@ -83,10 +86,12 @@ def enviar_correo():
     tiempo, voltaje, temperatura = generar_datos_biomedicos()
     filepath = "/tmp/reporte_clinico.csv" if os.name != 'nt' else "reporte_clinico.csv"
     
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write("Tiempo (s),ECG Voltaje (mV),Temperatura (C)\n")
-        for t, v, temp in zip(tiempo, voltaje, temperatura):
-            f.write(f"{t},{v},{temp}\n")
+    df = pd.DataFrame({
+        "Tiempo (s)": tiempo,
+        "ECG Voltaje (mV)": voltaje,
+        "Temperatura (C)": temperatura
+    })
+    df.to_csv(filepath, index=False, encoding='utf-8')
 
     msg = MIMEMultipart()
     msg['From'] = REMITENTE
@@ -114,4 +119,5 @@ def enviar_correo():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    puerto = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=puerto)
