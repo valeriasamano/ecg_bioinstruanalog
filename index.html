@@ -257,7 +257,7 @@
         }
 
         function inicializarGraficas() {
-            const ctxECG = document.getElementById('chartECG').getContext('3d');
+            const ctxECG = document.getElementById('chartECG').getContext('2d');
             const respaldo = generarDatosRespaldo();
 
             ecgChart = new Chart(ctxECG, {
