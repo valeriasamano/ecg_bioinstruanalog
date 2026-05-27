@@ -10,31 +10,14 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
         
-        /* Animación del Corazón LED (Latido con Efecto de Resplandor) */
+        /* Animación del Corazón LED */
         @keyframes ledPulse {
-            0% {
-                transform: scale(1);
-                background-color: #EF4444;
-                box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
-            }
-            30% {
-                transform: scale(1.15);
-                background-color: #FCA5A5;
-                box-shadow: 0 0 25px rgba(239, 68, 68, 0.9);
-            }
-            60% {
-                transform: scale(1);
-                background-color: #EF4444;
-                box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
-            }
-            100% {
-                transform: scale(0.98);
-                background-color: #FEE2E2;
-                box-shadow: 0 0 4px rgba(239, 68, 68, 0.2);
-            }
+            0% { transform: scale(1); background-color: #EF4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.7); }
+            30% { transform: scale(1.15); background-color: #FCA5A5; box-shadow: 0 0 25px rgba(239, 68, 68, 0.9); }
+            60% { transform: scale(1); background-color: #EF4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.7); }
+            100% { transform: scale(0.98); background-color: #FEE2E2; box-shadow: 0 0 4px rgba(239, 68, 68, 0.2); }
         }
 
-        /* Figura de Corazón CSS Puro y Simétrico */
         .heart-shape {
             position: relative;
             width: 24px;
@@ -45,42 +28,31 @@
             display: inline-block;
         }
 
-        .heart-shape::before,
-        .heart-shape::after {
-            content: "";
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            background-color: inherit;
-            border-radius: 50%;
+        .heart-shape::before, .heart-shape::after {
+            content: ""; position: absolute; width: 24px; height: 24px; background-color: inherit; border-radius: 50%;
         }
+        .heart-shape::before { top: -12px; left: 0; }
+        .heart-shape::after { top: 0; left: 12px; }
 
-        .heart-shape::before {
-            top: -12px;
-            left: 0;
+        /* Estilos de transición para FAQ */
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
         }
-
-        .heart-shape::after {
-            top: 0;
-            left: 12px;
+        .faq-active .faq-content {
+            max-height: 200px;
+            padding-top: 1rem;
         }
-
-        /* Estilos para el efecto 3D de volteo de las Flashcards */
-        .perspective-1000 {
-            perspective: 1000px;
+        .faq-chevron {
+            transition: transform 0.3s ease;
         }
-        .preserve-3d {
-            transform-style: preserve-3d;
-        }
-        .backface-hidden {
-            backface-visibility: hidden;
-        }
-        .rotate-y-180 {
-            transform: rotateY(180deg);
+        .faq-active .faq-chevron {
+            transform: rotate(180deg);
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 relative">
 
     <div class="min-h-screen p-6 md:p-10 max-w-7xl mx-auto w-full">
         
@@ -137,8 +109,11 @@
                         <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Ritmo QRS</p>
                         <p class="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block mt-1">Sinusal Consistente</p>
                     </div>
-                    <div class="col-span-2 md:col-span-1">
-                        <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2.5 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
+                    <div class="col-span-2 md:col-span-1 flex flex-col gap-2">
+                        <button onclick="abrirModalECG()" class="w-full text-xs font-bold bg-purple-50 text-purple-600 py-2 px-4 rounded-xl hover:bg-purple-100 border border-purple-100 transition-all">
+                             🔍 Explorar Ondas del ECG
+                        </button>
+                        <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
                              Descargar Reporte (.CSV)
                         </button>
                     </div>
@@ -179,62 +154,87 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-sm w-full">
+        <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-sm w-full mb-10">
             <div class="mb-6">
-                <h3 class="text-xl font-bold text-slate-900 tracking-tight">Guía Informativa para el Paciente</h3>
-                <p class="text-slate-400 text-sm font-medium">Haz clic en cada tarjeta para conocer qué significan tus valores y cuáles son los rangos normales.</p>
+                <h3 class="text-xl font-bold text-slate-900 tracking-tight">Preguntas Frecuentes y Rangos Normales</h3>
+                <p class="text-slate-400 text-sm font-medium">Haz clic sobre cualquier fila para desplegar la información detallada de salud.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="flex flex-col gap-3">
                 
-                <div class="w-full h-48 perspective-1000 cursor-pointer" onclick="voltearTarjeta(this)">
-                    <div class="w-full h-full relative preserve-3d transition-transform duration-500 rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 hover:shadow-md">
-                        <div class="absolute inset-0 backface-hidden p-5 flex flex-col justify-between">
-                            <span class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Tu Corazón</span>
-                            <p class="text-base font-bold text-slate-800 text-center my-auto">¿Qué es el pulso o Frecuencia Cardíaca?</p>
-                            <span class="text-[11px] text-slate-400 text-center font-medium">Ver respuesta 🔄</span>
+                <div class="border border-slate-100 rounded-2xl bg-slate-50/50 p-4 cursor-pointer transition-all hover:bg-slate-50" onclick="toggleFaq(this)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                            <p class="font-bold text-slate-800 text-sm md:text-base">¿Qué es el pulso o Frecuencia Cardíaca y cuál es su rango normal?</p>
                         </div>
-                        <div class="absolute inset-0 backface-hidden rotate-y-180 p-5 bg-slate-900 rounded-2xl text-white flex flex-col justify-between">
-                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Explicación</span>
-                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">Es el número de veces que tu corazón late en un minuto (lpm). En reposo, lo normal y saludable para un adulto es estar entre 60 y 100 lpm.</p>
-                            <span class="text-[10px] text-slate-400 text-center">Rango Normal: 60 - 100 lpm</span>
-                        </div>
+                        <svg class="faq-chevron w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="faq-content text-xs md:text-sm text-slate-600 font-medium border-t border-dashed border-slate-200 mt-0">
+                        Es el número de veces que tu corazón late en un minuto (lpm). Para un adulto en estado de reposo absoluto, el rango saludable estándar se encuentra entre **60 y 100 latidos por minuto**. Valores fuera de este rango bajo supervisión médica prolongada ameritan revisión.
                     </div>
                 </div>
 
-                <div class="w-full h-48 perspective-1000 cursor-pointer" onclick="voltearTarjeta(this)">
-                    <div class="w-full h-full relative preserve-3d transition-transform duration-500 rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 hover:shadow-md">
-                        <div class="absolute inset-0 backface-hidden p-5 flex flex-col justify-between">
-                            <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Tu Temperatura</span>
-                            <p class="text-base font-bold text-slate-800 text-center my-auto">¿Cuándo se considera fiebre?</p>
-                            <span class="text-[11px] text-slate-400 text-center font-medium">Ver respuesta 🔄</span>
+                <div class="border border-slate-100 rounded-2xl bg-slate-50/50 p-4 cursor-pointer transition-all hover:bg-slate-50" onclick="toggleFaq(this)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <p class="font-bold text-slate-800 text-sm md:text-base">¿A partir de cuántos grados se considera fiebre corporal?</p>
                         </div>
-                        <div class="absolute inset-0 backface-hidden rotate-y-180 p-5 bg-slate-900 rounded-2xl text-white flex flex-col justify-between">
-                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Explicación</span>
-                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">La temperatura normal del cuerpo está entre 36.5°C y 37.2°C. Si sube de 37.5°C es febrícula (un aviso), y a partir de 38.0°C ya es fiebre clínica.</p>
-                            <span class="text-[10px] text-slate-400 text-center">Normal: 36.5°C - 37.2°C</span>
-                        </div>
+                        <svg class="faq-chevron w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="faq-content text-xs md:text-sm text-slate-600 font-medium border-t border-dashed border-slate-200 mt-0">
+                        La temperatura corporal óptima (Normotermia) oscila entre **36.5°C y 37.2°C**. Si tu temperatura registra entre 37.3°C y 37.9°C se le conoce como febrícula o temperatura elevada de alerta. A partir de los **38.0°C** en adelante se considera fiebre clínica.
                     </div>
                 </div>
 
-                <div class="w-full h-48 perspective-1000 cursor-pointer" onclick="voltearTarjeta(this)">
-                    <div class="w-full h-full relative preserve-3d transition-transform duration-500 rounded-2xl border border-slate-200/80 shadow-sm bg-slate-50 hover:shadow-md">
-                        <div class="absolute inset-0 backface-hidden p-5 flex flex-col justify-between">
-                            <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">El Gráfico</span>
-                            <p class="text-base font-bold text-slate-800 text-center my-auto">¿Qué significan las líneas del ECG?</p>
-                            <span class="text-[11px] text-slate-400 text-center font-medium">Ver respuesta 🔄</span>
+                <div class="border border-slate-100 rounded-2xl bg-slate-50/50 p-4 cursor-pointer transition-all hover:bg-slate-50" onclick="toggleFaq(this)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                            <p class="font-bold text-slate-800 text-sm md:text-base">¿Qué significa que mi panel indique un "Ritmo Sinusal Consistente"?</p>
                         </div>
-                        <div class="absolute inset-0 backface-hidden rotate-y-180 p-5 bg-slate-900 rounded-2xl text-white flex flex-col justify-between">
-                            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-md w-max font-bold uppercase tracking-wider">Explicación</span>
-                            <p class="text-xs sm:text-sm font-medium text-slate-200 text-center my-auto">Muestran la actividad eléctrica de tu corazón en tiempo real. Cada "pico" alto representa un latido que bombea sangre a tu cuerpo de forma ordenada.</p>
-                            <span class="text-[10px] text-slate-400 text-center">Ritmo Sinusal = Ritmo Normal</span>
-                        </div>
+                        <svg class="faq-chevron w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="faq-content text-xs md:text-sm text-slate-600 font-medium border-t border-dashed border-slate-200 mt-0">
+                        Significa que los latidos de tu corazón están naciendo de forma totalmente natural en la zona correcta del corazón (el nodo sinusal). Es el término médico utilizado para confirmar que tu ritmo cardíaco es **normal, constante y saludable**.
                     </div>
                 </div>
 
             </div>
         </div>
 
+    </div>
+
+    <div id="modalECG" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-xl font-bold text-slate-900">¿Qué significan las ondas de mi gráfica?</h4>
+                    <p class="text-xs text-slate-400 font-medium mt-0.5">Selecciona un elemento para descubrir qué parte de tu corazón representa.</p>
+                </div>
+                <button onclick="cerrarModalECG()" class="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="bg-slate-900 text-emerald-400 p-4 rounded-2xl font-mono text-xs flex justify-center items-center h-24 shadow-inner tracking-widest relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+                <span class="text-white/40">_/\_</span><span class="text-amber-400 font-bold text-base bg-amber-400/10 px-1 rounded mx-0.5">Onda P</span><span class="text-red-500 font-black text-xl bg-red-500/10 px-1 rounded mx-0.5">/\</span><span class="text-blue-400 font-bold text-base bg-blue-400/10 px-1 rounded mx-0.5">Onda T</span><span class="text-white/40">________</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="cambiarExplicacionSegmento('p')" class="py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-xs sm:text-sm transition-all text-center">Onda P</button>
+                <button onclick="cambiarExplicacionSegmento('qrs')" class="py-2.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs sm:text-sm transition-all text-center">Complejo QRS</button>
+                <button onclick="cambiarExplicacionSegmento('t')" class="py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs sm:text-sm transition-all text-center">Onda T</button>
+            </div>
+
+            <div id="cajaInfoSegmento" class="bg-slate-50 border border-slate-100 p-5 rounded-2xl min-h-[100px] flex flex-col justify-center">
+                <p class="text-sm text-slate-500 text-center font-medium">Selecciona una de las ondas superiores para ver su explicación interactiva.</p>
+            </div>
+            
+            <button onclick="cerrarModalECG()" class="w-full bg-slate-900 text-white text-sm font-bold py-3 rounded-xl hover:bg-slate-800 shadow-md transition-all">Entendido</button>
+        </div>
     </div>
 
     <script>
@@ -254,7 +254,6 @@
         document.getElementById('nombrePaciente').addEventListener('input', (e) => {
             const valor = e.target.value.trim();
             const contenedor = document.getElementById('contenedorSaludo');
-            
             if (valor === "") {
                 contenedor.innerHTML = '¡Hola! <span id="saludoNombre" class="text-blue-600">Comenzar mediciones</span>';
             } else {
@@ -262,16 +261,39 @@
             }
         });
 
-        function voltearTarjeta(elemento) {
-            const cardInner = elemento.querySelector('.preserve-3d');
-            cardInner.classList.toggle('rotate-y-180');
+        // Funciones para la sección de FAQ Horizontales estilo acordeón
+        function toggleFaq(elemento) {
+            elemento.classList.toggle('faq-active');
+        }
+
+        // Funciones para el Control del Popup interactivo del ECG
+        function abrirModalECG() {
+            document.getElementById('modalECG').classList.remove('hidden');
+            cambiarExplicacionSegmento('p'); // Abre mostrando la onda P por defecto
+        }
+
+        function cerrarModalECG() {
+            document.getElementById('modalECG').classList.add('hidden');
+        }
+
+        function cambiarExplicacionSegmento(tipo) {
+            const contenedor = document.getElementById('cajaInfoSegmento');
+            if(tipo === 'p') {
+                contenedor.innerHTML = `<h5 class="font-bold text-amber-800 text-sm mb-1">Onda P: El inicio del latido</h5>
+                                        <p class="text-xs sm:text-sm text-slate-600 font-medium">Es la primera pequeña curva hacia arriba. Muestra el momento exacto en el que las aurículas (las cámaras superiores de tu corazón) se llenan de electricidad para enviar la sangre hacia abajo.</p>`;
+            } else if(tipo === 'qrs') {
+                contenedor.innerHTML = `<h5 class="font-bold text-red-800 text-sm mb-1">Complejo QRS: El impulso principal</h5>
+                                        <p class="text-xs sm:text-sm text-slate-600 font-medium">Es el pico más alto y rápido de la gráfica. Representa la fuerza eléctrica con la que tus ventrículos (las cámaras inferiores grandes) se contraen para bombear con fuerza la sangre hacia todo tu cuerpo.</p>`;
+            } else if(tipo === 't') {
+                contenedor.innerHTML = `<h5 class="font-bold text-blue-800 text-sm mb-1">Onda T: El descanso cardíaco</h5>
+                                        <p class="text-xs sm:text-sm text-slate-600 font-medium">Es la última onda suave antes del siguiente latido. Significa que los músculos de tu corazón se están relajando y recuperando su energía eléctrica para poder latir de nuevo adecuadamente.</p>`;
+            }
         }
 
         function verificarAutorizacion() {
             if (localStorage.getItem("medicoAutorizado") === "true") {
                 return true;
             }
-
             const intento = prompt("Ingrese la clave médica para controlar el registro de datos:");
             if (intento === PALABRA_CLAVE_MEDICO) {
                 localStorage.setItem("medicoAutorizado", "true");
@@ -279,23 +301,19 @@
             } else {
                 alert("Acceso denegado. Solo el personal autorizado puede iniciar o detener el registro.");
                 return false;
-            }Verification
+            }
         }
 
         function toggleRegistro() {
             if (!verificarAutorizacion()) return;
-
             const btn = document.getElementById('btnRegistrar');
             registrandoActivo = !registrandoActivo;
-
             if (registrandoActivo) {
                 btn.innerHTML = '<span>🛑 Detener Registro</span>';
                 btn.className = "bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition-all text-sm flex items-center gap-2";
-                console.log("Registro de datos iniciado en el backend...");
             } else {
                 btn.innerHTML = '<span>🟢 Iniciar Registro</span>';
                 btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition-all text-sm flex items-center gap-2";
-                console.log("Registro de datos detenido.");
             }
         }
 
@@ -303,80 +321,40 @@
             const canvas = document.getElementById('verticalThermometer');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const x = canvas.width / 2 - 10; 
-            const topY = 20;                 
-            const bottomY = 190;             
-            const tuboHeight = bottomY - topY;
-            const tuboWidth = 16;
-            const bulboRadius = 18;
-            const bulboX = x + tuboWidth / 2;
-            const bulboY = bottomY + bulboRadius - 2;
+            const x = canvas.width / 2 - 10; const topY = 20; const bottomY = 190;
+            const tuboHeight = bottomY - topY; const tuboWidth = 16; const bulboRadius = 18;
+            const bulboX = x + tuboWidth / 2; const bulboY = bottomY + bulboRadius - 2;
 
-            ctx.beginPath();
-            ctx.moveTo(x, bottomY);
-            ctx.lineTo(x, topY + tuboWidth / 2);
+            ctx.beginPath(); ctx.moveTo(x, bottomY); ctx.lineTo(x, topY + tuboWidth / 2);
             ctx.arc(x + tuboWidth / 2, topY + tuboWidth / 2, tuboWidth / 2, Math.PI, 0, false);
-            ctx.lineTo(x + tuboWidth, bottomY);
-            ctx.arc(bulboX, bulboY, bulboRadius, -Math.PI / 4, 5 * Math.PI / 4, false);
-            ctx.closePath();
-            ctx.fillStyle = '#E2E8F0';
-            ctx.fill();
-            ctx.strokeStyle = '#CBD5E1';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
+            ctx.lineTo(x + tuboWidth, bottomY); ctx.arc(bulboX, bulboY, bulboRadius, -Math.PI / 4, 5 * Math.PI / 4, false);
+            ctx.closePath(); ctx.fillStyle = '#E2E8F0'; ctx.fill(); ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = 1.5; ctx.stroke();
 
-            const minTemp = 20;
-            const maxTemp = 45;
-            let fraccion = (temp - minTemp) / (maxTemp - minTemp);
-            fraccion = Math.max(0, Math.min(1, fraccion)); 
-            const fillHeight = fraccion * tuboHeight;
-            const currentFillY = bottomY - fillHeight;
+            const minTemp = 20; const maxTemp = 45;
+            let fraccion = (temp - minTemp) / (maxTemp - minTemp); fraccion = Math.max(0, Math.min(1, fraccion));
+            const fillHeight = fraccion * tuboHeight; const currentFillY = bottomY - fillHeight;
 
-            let colorFluido = '#3B82F6'; 
-            if (temp >= 36 && temp <= 37.5) colorFluido = '#10B981'; 
-            else if (temp > 37.5) colorFluido = '#EF4444'; 
+            let colorFluido = '#3B82F6'; if (temp >= 36 && temp <= 37.5) colorFluido = '#10B981'; else if (temp > 37.5) colorFluido = '#EF4444';
+            ctx.fillStyle = colorFluido; ctx.beginPath(); ctx.moveTo(x + 2, bottomY); ctx.lineTo(x + 2, currentFillY);
+            ctx.lineTo(x + tuboWidth - 2, currentFillY); ctx.lineTo(x + tuboWidth - 2, bottomY); ctx.closePath(); ctx.fill();
 
-            ctx.fillStyle = colorFluido;
-            ctx.beginPath();
-            ctx.moveTo(x + 2, bottomY);
-            ctx.lineTo(x + 2, currentFillY);
-            ctx.lineTo(x + tuboWidth - 2, currentFillY);
-            ctx.lineTo(x + tuboWidth - 2, bottomY);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.arc(bulboX, bulboY, bulboRadius - 2, 0, 2 * Math.PI);
-            ctx.fill();
-
-            ctx.strokeStyle = '#64748B';
-            ctx.lineWidth = 1;
-            ctx.font = 'bold 9px Plus Jakarta Sans';
-            ctx.fillStyle = '#64748B';
+            ctx.beginPath(); ctx.arc(bulboX, bulboY, bulboRadius - 2, 0, 2 * Math.PI); ctx.fill();
+            ctx.strokeStyle = '#64748B'; ctx.lineWidth = 1; ctx.font = 'bold 9px Plus Jakarta Sans'; ctx.fillStyle = '#64748B';
 
             const lineasMarcas = [20, 25, 30, 35, 40, 45];
             lineasMarcas.forEach(marca => {
-                let f = (marca - minTemp) / (maxTemp - minTemp);
-                let markY = bottomY - (f * tuboHeight);
-                
-                ctx.beginPath();
-                ctx.moveTo(x - 6, markY);
-                ctx.lineTo(x - 1, markY);
-                ctx.stroke();
-                ctx.fillText(marca + "°", x - 26, markY + 3);
+                let f = (marca - minTemp) / (maxTemp - minTemp); let markY = bottomY - (f * tuboHeight);
+                ctx.beginPath(); ctx.moveTo(x - 6, markY); ctx.lineTo(x - 1, markY); ctx.stroke(); ctx.fillText(marca + "°", x - 26, markY + 3);
             });
         }
 
         function generarDatosRespaldo() {
             let tiempo = [], voltaje = [];
             for (let i = 0; i < 100; i++) {
-                let t = i * 0.02;
-                tiempo.push(t.toFixed(2));
+                let t = i * 0.02; tiempo.push(t.toFixed(2));
                 let v = 0.3 * Math.sin(2 * Math.PI * 1.3 * t);
-                if (i % 35 === 0) v += 1.5; 
+                if (i % 35 === 0) v += 1.5;
                 voltaje.push(v + (Math.random() - 0.5) * 0.03);
             }
             return { tiempo, voltaje };
@@ -391,47 +369,18 @@
                 data: { 
                     labels: respaldo.tiempo, 
                     datasets: [{
-                        label: 'Voltaje', 
-                        data: respaldo.voltaje,
-                        borderColor: '#EF4444', 
-                        borderWidth: 2, 
-                        pointRadius: 0, 
-                        fill: false, 
-                        tension: 0.1
+                        label: 'Voltaje', data: respaldo.voltaje, borderColor: '#EF4444', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.1
                     }]
                 },
                 options: {
-                    responsive: true, 
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        x: { 
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Tiempo (s)',
-                                color: '#64748B',
-                                font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
-                            },
-                            grid: { color: '#F1F5F9' },
-                            ticks: { color: '#64748B', maxTicksLimit: 10 }
-                        }, 
-                        y: { 
-                            min: -0.5, 
-                            max: 2.0, 
-                            title: {
-                                display: true,
-                                text: 'Voltaje ECG (mV)',
-                                color: '#64748B',
-                                font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
-                            },
-                            grid: { color: '#F1F5F9' },
-                            ticks: { color: '#64748B' }
-                        } 
+                        x: { display: true, grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', maxTicksLimit: 10 } }, 
+                        y: { min: -0.5, max: 2.0, grid: { color: '#F1F5F9' }, ticks: { color: '#64748B' } } 
                     }
                 }
             });
-
             dibujarTermometroVertical(corrienteTemperatura);
         }
 
@@ -440,19 +389,12 @@
                 const response = await fetch(`${BACKEND_URL}/api/biomedicos`);
                 if (response.ok) {
                     const data = await response.json();
-                    
                     document.getElementById('liveTemp').innerText = data.temp_actual;
                     document.getElementById('liveBPM').innerText = data.bpm;
-                    
                     const duracionLatido = (60 / data.bpm).toFixed(2);
                     document.getElementById('heartBeater').style.animationDuration = `${duracionLatido}s`;
-                    
-                    ecgChart.data.labels = data.tiempo;
-                    ecgChart.data.datasets[0].data = data.voltaje;
-                    ecgChart.update();
-
-                    corrienteTemperatura = data.temp_actual;
-                    dibujarTermometroVertical(corrienteTemperatura);
+                    ecgChart.data.labels = data.tiempo; ecgChart.data.datasets[0].data = data.voltaje; ecgChart.update();
+                    corrienteTemperatura = data.temp_actual; dibujarTermometroVertical(corrienteTemperatura);
                 }
             } catch (error) {
                 corrienteTemperatura = (36.6 + Math.random() * 0.3);
@@ -461,14 +403,10 @@
             }
         }
 
-        function descargarReporte() {
-            window.location.href = `${BACKEND_URL}/api/descargar`;
-        }
+        function descargarReporte() { window.location.href = `${BACKEND_URL}/api/descargar`; }
 
         window.onload = () => {
-            establecerFechaActual();
-            inicializarGraficas();
-            refrescarDatosDashboard();
+            establecerFechaActual(); inicializarGraficas(); refrescarDatosDashboard();
             setInterval(refrescarDatosDashboard, 2000);
         };
     </script>
