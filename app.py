@@ -1,42 +1,49 @@
 import os
 import math
 import random
+import csv
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
-import pandas as pd
-import numpy as np
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
-CORS(app)  # Evita bloqueos de origen cruzado con tu index.html
+CORS(app)
 
-# --- GENERACIÓN DE SEÑALES USANDO NUMPY ---
-def generar_senal_ecg():
-    fs = 500  
-    tiempo = np.linspace(0, 2, fs)
-    voltaje = 0.2 * np.sin(2 * np.pi * 1.2 * tiempo)
-    for i in range(len(tiempo)):
-        if i % 150 == 0:
-            voltaje[i] += 1.5  # Complejo QRS
-    voltaje += np.random.normal(0, 0.03, fs)
-    return tiempo.tolist(), voltaje.tolist()
+# --- SIMULACIÓN NATIVA DE SEÑALES BIOMÉDICAS ---
+def generar_senal_ecg_nativa():
+    tiempo = []
+    voltaje = []
+    pasos = 100
+    for i in range(pasos):
+        t = i * 0.02
+        tiempo.append(round(t, 2))
+        
+        # Onda senoidal base + Complejo QRS ficticio
+        v = 0.3 * math.sin(2 * math.pi * 1.3 * t)
+        if i % 35 == 0:
+            v += 1.5
+        # Ruido térmico de fondo
+        v += random.uniform(-0.03, 0.03)
+        voltaje.append(round(v, 4))
+        
+    return tiempo, voltaje
 
 @app.route('/api/biomedicos', methods=['GET'])
 def obtener_datos():
-    tiempo, voltaje = generar_senal_ecg()
-    bpm_simulado = int(np.random.randint(70, 75))
-    temp_simulada = round(float(36.6 + np.random.uniform(-0.2, 0.3)), 1)
+    tiempo, voltaje = generar_senal_ecg_nativa()
+    bpm_simulado = random.randint(71, 74)
+    temp_simulada = round(random.uniform(36.5, 36.9), 1)
     
     return jsonify({
-        "tiempo": tiempo[:100],  # Primeros 100 puntos optimizados para la gráfica
-        "voltaje": voltaje[:100],
+        "tiempo": tiempo,
+        "voltaje": voltaje,
         "bpm": bpm_simulado,
         "temp_actual": temp_simulada
     })
 
-# --- PASARELA DE CORREO SMTP ---
+# --- PASARELA DE CORREO SMTP (TELEMEDICINA) ---
 @app.route('/api/enviar-correo', methods=['POST'])
 def enviar_correo():
     datos = request.get_json() or {}
@@ -48,6 +55,8 @@ def enviar_correo():
 
     SMTP_SERVER = "smtp.gmail.com"
     SMTP_PORT = 587
+    
+    # Configura tus variables de entorno en Render (EMAIL_USER y EMAIL_PASS)
     REMITENTE_EMAIL = os.environ.get("EMAIL_USER", "tu.correo@gmail.com") 
     REMITENTE_PASSWORD = os.environ.get("EMAIL_PASS", "tu_contraseña_de_aplicacion")
 
@@ -80,19 +89,19 @@ def enviar_correo():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- EXPORTAR REPORTE EXCEL ORIGINAL (.XLSX) ---
+# --- EXPORTAR REPORTE NATIVO EN CSV ---
 @app.route('/api/descargar', methods=['GET'])
 def descargar_reporte():
-    tiempo, voltaje = generar_senal_ecg()
-    df = pd.DataFrame({
-        'Time (s)': tiempo,
-        'ECG Voltage (mV)': voltaje
-    })
+    tiempo, voltaje = generar_senal_ecg_nativa()
+    ruta_archivo = "reporte_clinico.csv"
     
-    ruta_archivo = "reporte_clinico.xlsx"
-    df.to_excel(ruta_archivo, index=False, sheet_name="ECG Data")
-    
-    return send_file(ruta_archivo, as_attachment=True, download_name="Reporte_Fisiologico.xlsx")
+    with open(ruta_archivo, mode='w', newline='', encoding='utf-8') as archivo:
+        escritor = csv.writer(archivo)
+        escritor.writerow(['Time (s)', 'ECG Voltage (mV)'])
+        for t, v in zip(tiempo, voltaje):
+            escritor.writerow([t, v])
+            
+    return send_file(ruta_archivo, as_attachment=True, download_name="Reporte_Fisiologico.csv")
 
 if __name__ == '__main__':
     puerto = int(os.environ.get("PORT", 5000))
