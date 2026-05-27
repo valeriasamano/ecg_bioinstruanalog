@@ -172,7 +172,8 @@
     </div>
 
     <script>
-        const BACKEND_URL = ""; 
+        // Enlaza de forma dinámica con el dominio de Render para evitar errores 404 de origen externo
+        const BACKEND_URL = window.location.origin; 
         let ecgChart;
         let corrienteTemperatura = 36.7;
 
@@ -269,7 +270,7 @@
                 let t = i * 0.02;
                 tiempo.push(t.toFixed(2));
                 let v = 0.3 * Math.sin(2 * Math.PI * 1.3 * t);
-                if (i % 35 === 0) v += 1.5; // Pico Complejo QRS ficticio
+                if (i % 35 === 0) v += 1.5; 
                 voltaje.push(v + (Math.random() - 0.5) * 0.03);
             }
             return { tiempo, voltaje };
@@ -298,7 +299,6 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        // CONFIGURACIÓN DE EJES Y UNIDADES ADICIONADAS
                         x: { 
                             display: true,
                             title: {
@@ -341,15 +341,16 @@
                     const duracionLatido = (60 / data.bpm).toFixed(2);
                     document.getElementById('heartBeater').style.animationDuration = `${duracionLatido}s`;
                     
+                    // CORRECCIÓN: Estructura exacta requerida para actualizar el objeto dataset en Chart.js
                     ecgChart.data.labels = data.tiempo;
-                    ecgChart.datasets[0].data = data.voltaje;
+                    ecgChart.data.datasets[0].data = data.voltaje;
                     ecgChart.update();
 
                     corrienteTemperatura = data.temp_actual;
                     dibujarTermometroVertical(corrienteTemperatura);
                 }
             } catch (error) {
-                // Algoritmo de oscilación simulada en caso de pérdida de conexión
+                // Caída de respaldo local en caso de desconexión momentánea de red
                 corrienteTemperatura = (36.6 + Math.random() * 0.3);
                 document.getElementById('liveTemp').innerText = corrienteTemperatura.toFixed(1);
                 dibujarTermometroVertical(corrienteTemperatura);
