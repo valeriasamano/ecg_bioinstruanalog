@@ -1,108 +1,117 @@
 import os
-import math
 import random
-import csv
-from flask import Flask, jsonify, request, send_file
+import math
+from flask import Flask, jsonify, send_file, request, render_template_string
 from flask_cors import CORS
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
 app = Flask(__name__)
 CORS(app)
 
-# --- SIMULACIÓN NATIVA DE SEÑALES BIOMÉDICAS ---
-def generar_senal_ecg_nativa():
+def generar_datos_biomedicos():
     tiempo = []
     voltaje = []
-    pasos = 100
-    for i in range(pasos):
+    temperatura = []
+    
+    # Generar 300 puntos de datos (Simulación analógica de ECG y Termómetro)
+    for i in range(300):
         t = i * 0.02
         tiempo.append(round(t, 2))
         
-        # Onda senoidal base + Complejo QRS ficticio
-        v = 0.3 * math.sin(2 * math.pi * 1.3 * t)
-        if i % 35 == 0:
-            v += 1.5
-        # Ruido térmico de fondo
-        v += random.uniform(-0.03, 0.03)
-        voltaje.append(round(v, 4))
+        # Simulación de onda ECG base
+        v = 0.5 * math.sin(2 * math.pi * 1.2 * t)
+        if i % 50 == 0: v += 1.5  # Complejo QRS (Onda R)
+        if (i - 2) % 50 == 0: v -= 0.3 # Onda S
+        v += random.normalvariate(0, 0.03) # Ruido analógico
+        voltaje.append(round(v, 3))
         
-    return tiempo, voltaje
+        # Simulación de Temperatura estable a 36.7°C
+        temp = 36.5 + random.normalvariate(0.2, 0.05)
+        temperatura.append(round(temp, 1))
+        
+    return tiempo, voltaje, temperatura
+
+@app.route('/', methods=['GET'])
+def home():
+    try:
+        with open('index.html', 'r', encoding='utf-8') as f:
+            contenido_html = f.read()
+        return render_template_string(contenido_html)
+    except Exception as e:
+        return f"Error al cargar la interfaz visual: {str(e)}", 500
 
 @app.route('/api/biomedicos', methods=['GET'])
 def obtener_datos():
-    tiempo, voltaje = generar_senal_ecg_nativa()
-    bpm_simulado = random.randint(71, 74)
-    temp_simulada = round(random.uniform(36.5, 36.9), 1)
-    
+    tiempo, voltaje, temperatura = generar_datos_biomedicos()
     return jsonify({
-        "tiempo": tiempo,
+        "tiempo": tiempo, 
         "voltaje": voltaje,
-        "bpm": bpm_simulado,
-        "temp_actual": temp_simulada
+        "temperatura": temperatura,
+        "temp_actual": temperatura[-1],
+        "bpm": 72
     })
 
-# --- PASARELA DE CORREO SMTP (TELEMEDICINA) ---
+@app.route('/api/descargar', methods=['GET'])
+def descargar_reporte():
+    tiempo, voltaje, temperatura = generar_datos_biomedicos()
+    filename = "/tmp/reporte_clinico.csv" if os.name != 'nt' else "reporte_clinico.csv"
+    
+    # Construcción nativa de CSV para evitar dependencias de Pandas
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write("Tiempo (s),ECG Voltaje (mV),Temperatura (C)\n")
+        for t, v, temp in zip(tiempo, voltaje, temperatura):
+            f.write(f"{t},{v},{temp}\n")
+            
+    return send_file(filename, as_attachment=True, download_name="reporte_clinico.csv")
+
 @app.route('/api/enviar-correo', methods=['POST'])
 def enviar_correo():
-    datos = request.get_json() or {}
-    correo_doctor = datos.get('correo_doctor')
-    nombre_paciente = datos.get('nombre_paciente', 'Paciente Anónimo')
-    
-    if not correo_doctor:
-        return jsonify({"status": "error", "message": "Falta el correo del especialista"}), 400
+    datos = request.json
+    correo_doctor = datos.get("correo_doctor", "")
+    nombre_paciente = datos.get("nombre_paciente", "Valeria Sámano")
 
-    SMTP_SERVER = "smtp.gmail.com"
-    SMTP_PORT = 587
+    if not correo_doctor:
+        return jsonify({"status": "error", "message": "Falta el correo."}), 400
+
+    REMITENTE = os.environ.get("EMAIL_REMITENTE", "")
+    PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
+
+    tiempo, voltaje, temperatura = generar_datos_biomedicos()
+    filepath = "/tmp/reporte_clinico.csv" if os.name != 'nt' else "reporte_clinico.csv"
     
-    # Configura tus variables de entorno en Render (EMAIL_USER y EMAIL_PASS)
-    REMITENTE_EMAIL = os.environ.get("EMAIL_USER", "tu.correo@gmail.com") 
-    REMITENTE_PASSWORD = os.environ.get("EMAIL_PASS", "tu_contraseña_de_aplicacion")
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write("Tiempo (s),ECG Voltaje (mV),Temperatura (C)\n")
+        for t, v, temp in zip(tiempo, voltaje, temperatura):
+            f.write(f"{t},{v},{temp}\n")
 
     msg = MIMEMultipart()
-    msg['From'] = REMITENTE_EMAIL
+    msg['From'] = REMITENTE
     msg['To'] = correo_doctor
-    msg['Subject'] = f"🚨 Telemedicina: Reporte Fisiológico - {nombre_paciente}"
+    msg['Subject'] = f"Reporte Clínico (ECG + Temp) - {nombre_paciente}"
 
-    cuerpo_html = f"""
-    <html>
-        <body style="font-family: Arial, sans-serif; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-                <h2 style="color: #0f172a; border-bottom: 2px solid #ef4444; padding-bottom: 8px;">Healthink. Report</h2>
-                <p>Monitoreo activo de laboratorio transmitido con éxito.</p>
-                <p><b>Paciente:</b> {nombre_paciente}</p>
-                <p><b>Estado:</b> Señales estables dentro del rango normotérmico.</p>
-            </div>
-        </body>
-    </html>
-    """
-    msg.attach(MIMEText(cuerpo_html, 'html'))
+    cuerpo = f"Adjunto reporte clínico del paciente: {nombre_paciente}.\nSensores: Electrocardiógrafo analógico y Termómetro digital."
+    msg.attach(MIMEText(cuerpo, 'plain'))
+
+    with open(filepath, "rb") as adjunto:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(adjunto.read())
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', f"attachment; filename= Reporte_{nombre_paciente}.csv")
+        msg.attach(part)
 
     try:
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(REMITENTE_EMAIL, REMITENTE_PASSWORD)
-        server.sendmail(REMITENTE_EMAIL, correo_doctor, msg.as_string())
+        server.login(REMITENTE, PASSWORD)
+        server.sendmail(REMITENTE, correo_doctor, msg.as_string())
         server.quit()
-        return jsonify({"status": "success", "message": "Reporte enviado."})
+        return jsonify({"status": "success", "message": "¡Reporte enviado!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- EXPORTAR REPORTE NATIVO EN CSV ---
-@app.route('/api/descargar', methods=['GET'])
-def descargar_reporte():
-    tiempo, voltaje = generar_senal_ecg_nativa()
-    ruta_archivo = "reporte_clinico.csv"
-    
-    with open(ruta_archivo, mode='w', newline='', encoding='utf-8') as archivo:
-        escritor = csv.writer(archivo)
-        escritor.writerow(['Time (s)', 'ECG Voltage (mV)'])
-        for t, v in zip(tiempo, voltaje):
-            escritor.writerow([t, v])
-            
-    return send_file(ruta_archivo, as_attachment=True, download_name="Reporte_Fisiologico.csv")
-
 if __name__ == '__main__':
-    puerto = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=puerto)
+    app.run(host='0.0.0.0', port=5000)
