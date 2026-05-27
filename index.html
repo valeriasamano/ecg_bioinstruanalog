@@ -19,15 +19,9 @@
         }
 
         .heart-shape {
-            position: relative;
-            width: 24px;
-            height: 24px;
-            background-color: #EF4444;
-            transform: rotate(-5deg);
-            animation: ledPulse 0.83s infinite ease-in-out;
-            display: inline-block;
+            position: relative; width: 24px; height: 24px; background-color: #EF4444;
+            transform: rotate(-25deg); animation: ledPulse 0.83s infinite ease-in-out; display: inline-block;
         }
-
         .heart-shape::before, .heart-shape::after {
             content: ""; position: absolute; width: 24px; height: 24px; background-color: inherit; border-radius: 50%;
         }
@@ -35,21 +29,10 @@
         .heart-shape::after { top: 0; left: 12px; }
 
         /* Estilos de transición para FAQ */
-        .faq-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-        }
-        .faq-active .faq-content {
-            max-height: 200px;
-            padding-top: 1rem;
-        }
-        .faq-chevron {
-            transition: transform 0.3s ease;
-        }
-        .faq-active .faq-chevron {
-            transform: rotate(180deg);
-        }
+        .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; }
+        .faq-active .faq-content { max-height: 200px; padding-top: 1rem; }
+        .faq-chevron { transition: transform 0.3s ease; }
+        .faq-active .faq-chevron { transform: rotate(180deg); }
     </style>
 </head>
 <body class="text-slate-800 relative">
@@ -94,26 +77,22 @@
                     <span class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">Mediciones en Vivo</span>
                 </div>
                 
-                <div class="h-72 w-full mb-4">
+                <div class="h-80 w-full mb-4 px-2">
                     <canvas id="chartECG"></canvas>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-100 pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-4 items-center">
                     <div>
                         <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Frecuencia Cardíaca</p>
                         <p class="text-4xl md:text-5xl font-black text-slate-900 mt-1 tracking-tight">
                             <span id="liveBPM">72</span><span class="text-base font-bold text-slate-400 ml-1.5 uppercase">lpm</span>
                         </p>
                     </div>
-                    <div>
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Ritmo QRS</p>
-                        <p class="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block mt-1">Sinusal Consistente</p>
-                    </div>
-                    <div class="col-span-2 md:col-span-1 flex flex-col gap-2">
-                        <button onclick="abrirModalECG()" class="w-full text-xs font-bold bg-purple-50 text-purple-600 py-2 px-4 rounded-xl hover:bg-purple-100 border border-purple-100 transition-all">
+                    <div class="hidden md:block"></div> <div class="flex flex-col gap-2">
+                        <button onclick="abrirModalECG()" class="w-full text-xs font-bold bg-purple-50 text-purple-600 py-2.5 px-4 rounded-xl hover:bg-purple-100 border border-purple-100 transition-all">
                              🔍 Explorar Ondas del ECG
                         </button>
-                        <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
+                        <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2.5 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
                              Descargar Reporte (.CSV)
                         </button>
                     </div>
@@ -161,7 +140,6 @@
             </div>
 
             <div class="flex flex-col gap-3">
-                
                 <div class="border border-slate-100 rounded-2xl bg-slate-50/50 p-4 cursor-pointer transition-all hover:bg-slate-50" onclick="toggleFaq(this)">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -171,7 +149,7 @@
                         <svg class="faq-chevron w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                     <div class="faq-content text-xs md:text-sm text-slate-600 font-medium border-t border-dashed border-slate-200 mt-0">
-                        Es el número de veces que tu corazón late en un minuto (lpm). Para un adulto en estado de reposo absoluto, el rango saludable estándar se encuentra entre **60 y 100 latidos por minuto**. Valores fuera de este rango bajo supervisión médica prolongada ameritan revisión.
+                        Es el número de veces que tu corazón late en un minuto (lpm). Para un adulto en reposo, el rango saludable estándar se encuentra entre **60 y 100 latidos por minuto**.
                     </div>
                 </div>
 
@@ -184,23 +162,9 @@
                         <svg class="faq-chevron w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                     <div class="faq-content text-xs md:text-sm text-slate-600 font-medium border-t border-dashed border-slate-200 mt-0">
-                        La temperatura corporal óptima (Normotermia) oscila entre **36.5°C y 37.2°C**. Si tu temperatura registra entre 37.3°C y 37.9°C se le conoce como febrícula o temperatura elevada de alerta. A partir de los **38.0°C** en adelante se considera fiebre clínica.
+                        La temperatura corporal óptima oscila entre **36.5°C y 37.2°C**. A partir de los **38.0°C** en adelante se considera fiebre clínica.
                     </div>
                 </div>
-
-                <div class="border border-slate-100 rounded-2xl bg-slate-50/50 p-4 cursor-pointer transition-all hover:bg-slate-50" onclick="toggleFaq(this)">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                            <p class="font-bold text-slate-800 text-sm md:text-base">¿Qué significa que mi panel indique un "Ritmo Sinusal Consistente"?</p>
-                        </div>
-                        <svg class="faq-chevron w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                    <div class="faq-content text-xs md:text-sm text-slate-600 font-medium border-t border-dashed border-slate-200 mt-0">
-                        Significa que los latidos de tu corazón están naciendo de forma totalmente natural en la zona correcta del corazón (el nodo sinusal). Es el término médico utilizado para confirmar que tu ritmo cardíaco es **normal, constante y saludable**.
-                    </div>
-                </div>
-
             </div>
         </div>
 
@@ -217,22 +181,15 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-
             <div class="bg-slate-900 text-emerald-400 p-4 rounded-2xl font-mono text-xs flex justify-center items-center h-24 shadow-inner tracking-widest relative overflow-hidden">
-                <div class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:14px_24px]"></div>
                 <span class="text-white/40">_/\_</span><span class="text-amber-400 font-bold text-base bg-amber-400/10 px-1 rounded mx-0.5">Onda P</span><span class="text-red-500 font-black text-xl bg-red-500/10 px-1 rounded mx-0.5">/\</span><span class="text-blue-400 font-bold text-base bg-blue-400/10 px-1 rounded mx-0.5">Onda T</span><span class="text-white/40">________</span>
             </div>
-
             <div class="grid grid-cols-3 gap-3">
                 <button onclick="cambiarExplicacionSegmento('p')" class="py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-xs sm:text-sm transition-all text-center">Onda P</button>
                 <button onclick="cambiarExplicacionSegmento('qrs')" class="py-2.5 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs sm:text-sm transition-all text-center">Complejo QRS</button>
                 <button onclick="cambiarExplicacionSegmento('t')" class="py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs sm:text-sm transition-all text-center">Onda T</button>
             </div>
-
-            <div id="cajaInfoSegmento" class="bg-slate-50 border border-slate-100 p-5 rounded-2xl min-h-[100px] flex flex-col justify-center">
-                <p class="text-sm text-slate-500 text-center font-medium">Selecciona una de las ondas superiores para ver su explicación interactiva.</p>
-            </div>
-            
+            <div id="cajaInfoSegmento" class="bg-slate-50 border border-slate-100 p-5 rounded-2xl min-h-[100px] flex flex-col justify-center"></div>
             <button onclick="cerrarModalECG()" class="w-full bg-slate-900 text-white text-sm font-bold py-3 rounded-xl hover:bg-slate-800 shadow-md transition-all">Entendido</button>
         </div>
     </div>
@@ -241,7 +198,6 @@
         const BACKEND_URL = window.location.origin; 
         let ecgChart;
         let corrienteTemperatura = 36.7;
-        
         const PALABRA_CLAVE_MEDICO = "BioMedica2026"; 
         let registrandoActivo = false;
 
@@ -261,47 +217,26 @@
             }
         });
 
-        // Funciones para la sección de FAQ Horizontales estilo acordeón
-        function toggleFaq(elemento) {
-            elemento.classList.toggle('faq-active');
-        }
-
-        // Funciones para el Control del Popup interactivo del ECG
-        function abrirModalECG() {
-            document.getElementById('modalECG').classList.remove('hidden');
-            cambiarExplicacionSegmento('p'); // Abre mostrando la onda P por defecto
-        }
-
-        function cerrarModalECG() {
-            document.getElementById('modalECG').classList.add('hidden');
-        }
+        function toggleFaq(elemento) { elemento.classList.toggle('faq-active'); }
+        function abrirModalECG() { document.getElementById('modalECG').classList.remove('hidden'); cambiarExplicacionSegmento('p'); }
+        function cerrarModalECG() { document.getElementById('modalECG').classList.add('hidden'); }
 
         function cambiarExplicacionSegmento(tipo) {
             const contenedor = document.getElementById('cajaInfoSegmento');
             if(tipo === 'p') {
-                contenedor.innerHTML = `<h5 class="font-bold text-amber-800 text-sm mb-1">Onda P: El inicio del latido</h5>
-                                        <p class="text-xs sm:text-sm text-slate-600 font-medium">Es la primera pequeña curva hacia arriba. Muestra el momento exacto en el que las aurículas (las cámaras superiores de tu corazón) se llenan de electricidad para enviar la sangre hacia abajo.</p>`;
+                contenedor.innerHTML = `<h5 class="font-bold text-amber-800 text-sm mb-1">Onda P: El inicio del latido</h5><p class="text-xs sm:text-sm text-slate-600 font-medium">Es la primera pequeña curva hacia arriba. Muestra el momento exacto en el que las aurículas se llenan de electricidad para enviar la sangre hacia abajo.</p>`;
             } else if(tipo === 'qrs') {
-                contenedor.innerHTML = `<h5 class="font-bold text-red-800 text-sm mb-1">Complejo QRS: El impulso principal</h5>
-                                        <p class="text-xs sm:text-sm text-slate-600 font-medium">Es el pico más alto y rápido de la gráfica. Representa la fuerza eléctrica con la que tus ventrículos (las cámaras inferiores grandes) se contraen para bombear con fuerza la sangre hacia todo tu cuerpo.</p>`;
+                contenedor.innerHTML = `<h5 class="font-bold text-red-800 text-sm mb-1">Complejo QRS: El impulso principal</h5><p class="text-xs sm:text-sm text-slate-600 font-medium">Es el pico más alto y rápido de la gráfica. Representa la fuerza eléctrica con la que tus ventrículos se contraen para bombear con fuerza la sangre hacia todo tu cuerpo.</p>`;
             } else if(tipo === 't') {
-                contenedor.innerHTML = `<h5 class="font-bold text-blue-800 text-sm mb-1">Onda T: El descanso cardíaco</h5>
-                                        <p class="text-xs sm:text-sm text-slate-600 font-medium">Es la última onda suave antes del siguiente latido. Significa que los músculos de tu corazón se están relajando y recuperando su energía eléctrica para poder latir de nuevo adecuadamente.</p>`;
+                contenedor.innerHTML = `<h5 class="font-bold text-blue-800 text-sm mb-1">Onda T: El descanso cardíaco</h5><p class="text-xs sm:text-sm text-slate-600 font-medium">Es la última onda suave antes del siguiente latido. Significa que los músculos de tu corazón se están relajando y recuperando su energía.</p>`;
             }
         }
 
         function verificarAutorizacion() {
-            if (localStorage.getItem("medicoAutorizado") === "true") {
-                return true;
-            }
+            if (localStorage.getItem("medicoAutorizado") === "true") return true;
             const intento = prompt("Ingrese la clave médica para controlar el registro de datos:");
-            if (intento === PALABRA_CLAVE_MEDICO) {
-                localStorage.setItem("medicoAutorizado", "true");
-                return true;
-            } else {
-                alert("Acceso denegado. Solo el personal autorizado puede iniciar o detener el registro.");
-                return false;
-            }
+            if (intento === PALABRA_CLAVE_MEDICO) { localStorage.setItem("medicoAutorizado", "true"); return true; }
+            else { alert("Acceso denegado."); return false; }
         }
 
         function toggleRegistro() {
@@ -316,6 +251,72 @@
                 btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition-all text-sm flex items-center gap-2";
             }
         }
+
+        // PLUGIN PERSONALIZADO DE CHART.JS PARA EL TRACKER DE COMPLEJOS Y SEGMENTOS
+        const ecgTrackerPlugin = {
+            id: 'ecgTracker',
+            afterDatasetsDraw(chart) {
+                const { ctx, scales: { x, y }, data } = chart;
+                const dataset = data.datasets[0].data;
+                if (!dataset || dataset.length === 0) return;
+
+                ctx.save();
+                
+                // Buscamos los índices donde ocurren los picos R (Complejo QRS)
+                for (let i = 2; i < dataset.length - 2; i++) {
+                    // Criterio de umbral para detectar el pico R del ECG de respaldo
+                    if (dataset[i] > 1.2 && dataset[i] > dataset[i-1] && dataset[i] > dataset[i+1]) {
+                        const xPos = x.getPixelForValue(data.labels[i]);
+
+                        // 1. Línea Central del Complejo QRS (Roja Sólida)
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
+                        ctx.lineWidth = 2;
+                        ctx.moveTo(xPos, y.top);
+                        ctx.lineTo(xPos, y.bottom);
+                        ctx.stroke();
+
+                        // Etiqueta QRS
+                        ctx.fillStyle = '#EF4444';
+                        ctx.font = 'bold 10px Plus Jakarta Sans';
+                        ctx.fillText('QRS', xPos - 10, y.top + 15);
+
+                        // 2. Línea Delimitadora Onda P (Amarilla Discontinua - Anterior al pico)
+                        if (i >= 6) {
+                            const xP = x.getPixelForValue(data.labels[i - 6]);
+                            ctx.beginPath();
+                            ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+                            ctx.lineWidth = 1.5;
+                            ctx.setLineDash([4, 4]);
+                            ctx.moveTo(xP, y.top);
+                            ctx.lineTo(xP, y.bottom);
+                            ctx.stroke();
+                            ctx.setLineDash([]); // Reset
+                            
+                            ctx.fillStyle = '#D97706';
+                            ctx.fillText('Onda P', xP - 18, y.top + 30);
+                        }
+
+                        // 3. Línea Delimitadora Onda T (Azul Discontinua - Posterior al pico)
+                        if (i + 12 < dataset.length) {
+                            const xT = x.getPixelForValue(data.labels[i + 12]);
+                            ctx.beginPath();
+                            ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
+                            ctx.lineWidth = 1.5;
+                            ctx.setLineDash([4, 4]);
+                            ctx.moveTo(xT, y.top);
+                            ctx.lineTo(xT, y.bottom);
+                            ctx.stroke();
+                            ctx.setLineDash([]); // Reset
+                            
+                            ctx.fillStyle = '#2563EB';
+                            ctx.fillText('Onda T', xT - 18, y.top + 45);
+                        }
+                    }
+                }
+                ctx.restore();
+            }
+        };
 
         function dibujarTermometroVertical(temp) {
             const canvas = document.getElementById('verticalThermometer');
@@ -353,9 +354,9 @@
             let tiempo = [], voltaje = [];
             for (let i = 0; i < 100; i++) {
                 let t = i * 0.02; tiempo.push(t.toFixed(2));
-                let v = 0.3 * Math.sin(2 * Math.PI * 1.3 * t);
-                if (i % 35 === 0) v += 1.5;
-                voltaje.push(v + (Math.random() - 0.5) * 0.03);
+                let v = 0.1 * Math.sin(2 * Math.PI * 1.2 * t);
+                if (i % 38 === 0) v += 1.6; // Simulación clara de picos R espaciados
+                voltaje.push(v + (Math.random() - 0.5) * 0.02);
             }
             return { tiempo, voltaje };
         }
@@ -376,10 +377,21 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        x: { display: true, grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', maxTicksLimit: 10 } }, 
-                        y: { min: -0.5, max: 2.0, grid: { color: '#F1F5F9' }, ticks: { color: '#64748B' } } 
+                        x: { 
+                            display: true, 
+                            title: { display: true, text: 'Tiempo (s)', color: '#64748B', font: { size: 11, weight: 'bold' } },
+                            grid: { color: '#F1F5F9' }, 
+                            ticks: { color: '#64748B', maxTicksLimit: 10 } 
+                        }, 
+                        y: { 
+                            min: -0.5, max: 2.2, 
+                            title: { display: true, text: 'Voltaje ECG (mV)', color: '#64748B', font: { size: 11, weight: 'bold' } },
+                            grid: { color: '#F1F5F9' }, 
+                            ticks: { color: '#64748B' } 
+                        } 
                     }
-                }
+                },
+                plugins: [ecgTrackerPlugin] // Agregamos el plugin del tracker aquí
             });
             dibujarTermometroVertical(corrienteTemperatura);
         }
