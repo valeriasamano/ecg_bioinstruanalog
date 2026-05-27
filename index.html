@@ -55,15 +55,8 @@
             border-radius: 50%;
         }
 
-        .heart-shape::before {
-            top: -12px;
-            left: 0;
-        }
-
-        .heart-shape::after {
-            top: 0;
-            left: 12px;
-        }
+        .heart-shape::before { top: -12px; left: 0; }
+        .heart-shape::after { top: 0; left: 12px; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -116,7 +109,7 @@
                     </div>
                     <div class="col-span-2 md:col-span-1">
                         <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2.5 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
-                            📥 Download Report (CSV)
+                            📥 Download Report (Excel)
                         </button>
                     </div>
                 </div>
@@ -158,7 +151,7 @@
 
         <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-900/10">
             <h4 class="text-lg font-bold mb-2">📧 Telemedicina: Envío Automatizado a Especialista</h4>
-            <p class="text-slate-400 text-sm mb-4 font-medium">Empaqueta las series de tiempo del ECG y el Termómetro procesadas en tu servidor de Render de forma inmediata.</p>
+            <p class="text-slate-400 text-sm mb-4 font-medium">Empaqueta las series de tiempo procesadas en tu servidor de Render de forma inmediata mediante sockets/REST.</p>
             
             <div class="flex flex-col sm:flex-row gap-3">
                 <input type="email" id="correoDoctor" class="flex-1 px-5 py-3 rounded-xl bg-slate-800 text-white border border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="correo.medico@gmail.com">
@@ -172,7 +165,8 @@
     </div>
 
     <script>
-        const BACKEND_URL = ""; 
+        // CONFIGURACIÓN DE TU ENDPOINT DE RENDER (PUNTO 2 VINCULADO)
+        const BACKEND_URL = "https://ecg-bioinstruanalog.onrender.com"; 
         let ecgChart;
         let corrienteTemperatura = 36.7;
 
@@ -186,40 +180,30 @@
             document.getElementById('saludoNombre').innerText = e.target.value || "Paciente";
         });
 
-        // DIBUJO DEL TERMÓMETRO VERTICAL (DISEÑO LIMPIO, SIN FLECHA INDICADORA)
+        // DIBUJO DEL TERMÓMETRO VERTICAL ANALÓGICO LIMPIO (SIN AGUJA INDICADORA)
         function dibujarTermometroVertical(temp) {
             const canvas = document.getElementById('verticalThermometer');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const x = canvas.width / 2 - 10; 
-            const topY = 20;                 
-            const bottomY = 190;             
-            const tuboHeight = bottomY - topY;
-            const tuboWidth = 16;
-            const bulboRadius = 18;
-            const bulboX = x + tuboWidth / 2;
-            const bulboY = bottomY + bulboRadius - 2;
+            const topY = 20; const bottomY = 190;             
+            const tuboHeight = bottomY - topY; const tuboWidth = 16;
+            const bulboRadius = 18; const bulboX = x + tuboWidth / 2; const bulboY = bottomY + bulboRadius - 2;
 
-            // 1. Contorno estructural del canal de vidrio
+            // Contorno del capilar
             ctx.beginPath();
-            ctx.moveTo(x, bottomY);
-            ctx.lineTo(x, topY + tuboWidth / 2);
+            ctx.moveTo(x, bottomY); ctx.lineTo(x, topY + tuboWidth / 2);
             ctx.arc(x + tuboWidth / 2, topY + tuboWidth / 2, tuboWidth / 2, Math.PI, 0, false);
             ctx.lineTo(x + tuboWidth, bottomY);
             ctx.arc(bulboX, bulboY, bulboRadius, -Math.PI / 4, 5 * Math.PI / 4, false);
             ctx.closePath();
-            ctx.fillStyle = '#E2E8F0';
-            ctx.fill();
-            ctx.strokeStyle = '#CBD5E1';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
+            ctx.fillStyle = '#E2E8F0'; ctx.fill();
+            ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = 1.5; ctx.stroke();
 
-            // 2. Cálculo dinámico de la columna de mercurio/fluido (20°C a 45°C)
-            const minTemp = 20;
-            const maxTemp = 45;
+            // Altura dinámica del fluido (Rango: 20°C a 45°C)
+            const minTemp = 20; const maxTemp = 45;
             let fraccion = (temp - minTemp) / (maxTemp - minTemp);
             fraccion = Math.max(0, Math.min(1, fraccion)); 
             const fillHeight = fraccion * tuboHeight;
@@ -229,36 +213,25 @@
             if (temp >= 36 && temp <= 37.5) colorFluido = '#10B981'; 
             else if (temp > 37.5) colorFluido = '#EF4444'; 
 
-            // 3. Relleno exacto del fluido en el capilar
+            // Relleno de la columna de líquido uniforme
             ctx.fillStyle = colorFluido;
             ctx.beginPath();
-            ctx.moveTo(x + 2, bottomY);
-            ctx.lineTo(x + 2, currentFillY);
-            ctx.lineTo(x + tuboWidth - 2, currentFillY);
-            ctx.lineTo(x + tuboWidth - 2, bottomY);
-            ctx.closePath();
-            ctx.fill();
+            ctx.moveTo(x + 2, bottomY); ctx.lineTo(x + 2, currentFillY);
+            ctx.lineTo(x + tuboWidth - 2, currentFillY); ctx.lineTo(x + tuboWidth - 2, bottomY);
+            ctx.closePath(); ctx.fill();
 
-            // Relleno del bulbo contenedor inferior
-            ctx.beginPath();
-            ctx.arc(bulboX, bulboY, bulboRadius - 2, 0, 2 * Math.PI);
-            ctx.fill();
+            // Relleno del bulbo inferior
+            ctx.beginPath(); ctx.arc(bulboX, bulboY, bulboRadius - 2, 0, 2 * Math.PI); ctx.fill();
 
-            // 4. Marcas e indicadores de escala graduada lateral
-            ctx.strokeStyle = '#64748B';
-            ctx.lineWidth = 1;
-            ctx.font = 'bold 9px Plus Jakarta Sans';
-            ctx.fillStyle = '#64748B';
+            // Líneas de escala graduada lateral
+            ctx.strokeStyle = '#64748B'; ctx.lineWidth = 1;
+            ctx.font = 'bold 9px Plus Jakarta Sans'; ctx.fillStyle = '#64748B';
 
             const lineasMarcas = [20, 25, 30, 35, 40, 45];
             lineasMarcas.forEach(marca => {
                 let f = (marca - minTemp) / (maxTemp - minTemp);
                 let markY = bottomY - (f * tuboHeight);
-                
-                ctx.beginPath();
-                ctx.moveTo(x - 6, markY);
-                ctx.lineTo(x - 1, markY);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(x - 6, markY); ctx.lineTo(x - 1, markY); ctx.stroke();
                 ctx.fillText(marca + "°", x - 26, markY + 3);
             });
         }
@@ -266,10 +239,9 @@
         function generarDatosRespaldo() {
             let tiempo = [], voltaje = [];
             for (let i = 0; i < 100; i++) {
-                let t = i * 0.02;
-                tiempo.push(t.toFixed(2));
+                let t = i * 0.02; tiempo.push(t.toFixed(2));
                 let v = 0.3 * Math.sin(2 * Math.PI * 1.3 * t);
-                if (i % 35 === 0) v += 1.5; // Pico Complejo QRS ficticio
+                if (i % 35 === 0) v += 1.5;
                 voltaje.push(v + (Math.random() - 0.5) * 0.03);
             }
             return { tiempo, voltaje };
@@ -284,48 +256,33 @@
                 data: { 
                     labels: respaldo.tiempo, 
                     datasets: [{
-                        label: 'Voltaje', 
-                        data: respaldo.voltaje,
-                        borderColor: '#EF4444', 
-                        borderWidth: 2, 
-                        pointRadius: 0, 
-                        fill: false, 
-                        tension: 0.1
+                        label: 'Voltaje', data: respaldo.voltaje,
+                        borderColor: '#EF4444', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.1
                     }]
                 },
                 options: {
-                    responsive: true, 
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { 
-                        // CONFIGURACIÓN DE EJES Y UNIDADES ADICIONADAS
                         x: { 
                             display: true,
                             title: {
-                                display: true,
-                                text: 'Time (s)',
-                                color: '#64748B',
+                                display: true, text: 'Time (s)', color: '#64748B',
                                 font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
                             },
-                            grid: { color: '#F1F5F9' },
-                            ticks: { color: '#64748B', maxTicksLimit: 10 }
+                            grid: { color: '#F1F5F9' }, ticks: { color: '#64748B', maxTicksLimit: 10 }
                         }, 
                         y: { 
-                            min: -0.5, 
-                            max: 2.0, 
+                            min: -0.5, max: 2.0, 
                             title: {
-                                display: true,
-                                text: 'ECG Voltage (mV)',
-                                color: '#64748B',
+                                display: true, text: 'ECG Voltage (mV)', color: '#64748B',
                                 font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
                             },
-                            grid: { color: '#F1F5F9' },
-                            ticks: { color: '#64748B' }
+                            grid: { color: '#F1F5F9' }, ticks: { color: '#64748B' }
                         } 
                     }
                 }
             });
-
             dibujarTermometroVertical(corrienteTemperatura);
         }
 
@@ -342,15 +299,15 @@
                     document.getElementById('heartBeater').style.animationDuration = `${duracionLatido}s`;
                     
                     ecgChart.data.labels = data.tiempo;
-                    ecgChart.datasets[0].data = data.voltaje;
+                    ecgChart.data.datasets[0].data = data.voltaje;
                     ecgChart.update();
 
                     corrienteTemperatura = data.temp_actual;
                     dibujarTermometroVertical(corrienteTemperatura);
                 }
             } catch (error) {
-                // Algoritmo de oscilación simulada en caso de pérdida de conexión
-                corrienteTemperatura = (36.6 + Math.random() * 0.3);
+                // Caída suave (Fallback dinámico si el server se está reiniciando)
+                corrienteTemperatura = (36.6 + Math.random() * 0.2);
                 document.getElementById('liveTemp').innerText = corrienteTemperatura.toFixed(1);
                 dibujarTermometroVertical(corrienteTemperatura);
             }
@@ -385,15 +342,14 @@
                     alerta("Error: " + res.message, "bg-red-500/20 text-red-400 border border-red-500/30");
                 }
             } catch (e) {
-                alerta("Error de enlace con el servidor.", "bg-red-500/20 text-red-400 border border-red-500/30");
+                alerta("Error de enlace con el servidor de Render.", "bg-red-500/20 text-red-400 border border-red-500/30");
             }
         }
 
         function alerta(msg, clases) {
             const box = document.getElementById('statusAlert');
             box.className = `mt-4 px-4 py-2.5 rounded-xl text-sm font-semibold ${clases}`;
-            box.innerText = msg;
-            box.classList.remove('hidden');
+            box.innerText = msg; box.classList.remove('hidden');
         }
 
         window.onload = () => {
