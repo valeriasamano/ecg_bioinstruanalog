@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Healthink. - Healthcare Dashboard</title>
+    <title>Monitoring ECG Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -40,7 +40,7 @@
             width: 24px;
             height: 24px;
             background-color: #EF4444;
-            transform: rotate(-45deg);
+            transform: rotate(-25deg);
             animation: ledPulse 0.83s infinite ease-in-out;
             display: inline-block;
         }
@@ -76,14 +76,14 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <input type="text" id="nombrePaciente" value="Valeria Sámano" class="px-5 py-2.5 rounded-full border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" placeholder="Nombre Paciente">
+                <input type="text" id="nombrePaciente" value=" " class="px-5 py-2.5 rounded-full border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" placeholder="Nombre Paciente">
                 <span id="fechaActual" class="text-sm font-bold text-slate-500 bg-white border border-slate-100 px-5 py-2.5 rounded-full shadow-sm"></span>
             </div>
         </header>
-
+(
         <div class="mb-8">
-            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Good Morning, <span id="saludoNombre">Valeria Sámano</span></h2>
-            <p class="text-slate-500 font-medium mt-1">Monitoreo de señales vitales activo y estable en laboratorio.</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Hola, <span id="saludoNombre">      </span></h2>
+            <p class="text-slate-500 font-medium mt-1">Monitoreo de señales vitales: ECG (actividad eléctrica del corazón) & Termómetro (temperatura corporal).</p>
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -96,9 +96,9 @@
                                 <div id="heartBeater" class="heart-shape"></div>
                             </div>
                         </div>
-                        <h3 class="font-bold text-slate-900 text-lg">Electrocardiogram (ECG Lead II)</h3>
+                        <h3 class="font-bold text-slate-900 text-lg">Electrocardiograma</h3>
                     </div>
-                    <span class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">Live Stream</span>
+                    <span class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">Mediciones en Vivo</span>
                 </div>
                 
                 <div class="h-72 w-full mb-4">
@@ -116,7 +116,7 @@
                     </div>
                     <div class="col-span-2 md:col-span-1">
                         <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2.5 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
-                            📥 Download Report (CSV)
+                             Download Report (.CSV)
                         </button>
                     </div>
                 </div>
@@ -257,7 +257,7 @@
         }
 
         function inicializarGraficas() {
-            const ctxECG = document.getElementById('chartECG').getContext('2d');
+            const ctxECG = document.getElementById('chartECG').getContext('3d');
             const respaldo = generarDatosRespaldo();
 
             ecgChart = new Chart(ctxECG, {
