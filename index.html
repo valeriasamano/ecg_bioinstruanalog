@@ -9,6 +9,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
+        
+        /* Animación del Corazón LED (Latido con Efecto de Resplandor) */
+        @keyframes ledPulse {
+            0% {
+                transform: scale(1);
+                background-color: #EF4444; /* Rojo brillante */
+                box-shadow: 0 0 20px #EF4444, 0 0 40px #EF4444;
+            }
+            35% {
+                transform: scale(1.12);
+                background-color: #FCA5A5; /* Rojo pálido / Rosa en el pico del QRS */
+                box-shadow: 0 0 5px #FCA5A5;
+            }
+            70% {
+                transform: scale(1);
+                background-color: #EF4444;
+                box-shadow: 0 0 20px #EF4444, 0 0 40px #EF4444;
+            }
+            100% {
+                transform: scale(1);
+                background-color: #FEE2E2; /* Tono pálido en el intervalo de descanso */
+                box-shadow: 0 0 2px rgba(239, 68, 68, 0.1);
+            }
+        }
+
+        .heart-led {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background-color: #EF4444;
+            border-radius: 50%;
+            display: inline-block;
+            animation: ledPulse 0.83s infinite ease-in-out; /* Sincronizado aprox a 72 BPM */
+            cursor: pointer;
+        }
+        /* Construcción geométrica del corazón usando pseudoelementos */
+        .heart-led::before, .heart-led::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            width: 22px;
+            height: 35px;
+            background: inherit;
+            border-radius: 20px 20px 0 0;
+        }
+        .heart-led::before {
+            left: 20px;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+        }
+        .heart-led::after {
+            left: 0;
+            transform: rotate(45deg);
+            transform-origin: 100 Mom 100%;
+            transform-origin: 100% 100%;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -38,14 +94,16 @@
             
             <div class="xl:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center justify-center w-12 h-12">
+                            <div id="heartBeater" class="heart-led"></div>
+                        </div>
                         <h3 class="font-bold text-slate-900 text-lg">Electrocardiogram (ECG Lead II)</h3>
                     </div>
                     <span class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-100">Live Stream</span>
                 </div>
                 
-                <div class="h-64 w-full mb-4">
+                <div class="h-60 w-full mb-4">
                     <canvas id="chartECG"></canvas>
                 </div>
 
@@ -66,31 +124,28 @@
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                            <h3 class="font-bold text-slate-900 text-lg">Thermometer Channel</h3>
-                        </div>
-                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Core Temp</span>
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between items-center text-center">
+                <div class="w-full flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                        <h3 class="font-bold text-slate-900 text-sm md:text-base">Thermostat Indicator</h3>
                     </div>
+                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Core Temp</span>
+                </div>
+                
+                <div class="relative w-56 h-56 my-2 flex items-center justify-center">
+                    <canvas id="thermostatDial" width="220" height="220" class="absolute top-0 left-0"></canvas>
                     
-                    <div class="flex items-baseline gap-1 my-6">
-                        <span id="liveTemp" class="text-6xl font-black text-slate-900 tracking-tight">36.7</span>
-                        <span class="text-2xl font-bold text-slate-400">°C</span>
-                    </div>
-
-                    <div class="h-24 w-full mb-4">
-                        <canvas id="chartTemp"></canvas>
+                    <div class="z-10 mt-6">
+                        <span id="liveTemp" class="text-4xl font-black text-slate-900 tracking-tight">36.7</span>
+                        <span class="text-lg font-bold text-slate-400">°C</span>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Current Temp</p>
                     </div>
                 </div>
 
-                <div class="border-t border-slate-50 pt-4">
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-slate-400 font-semibold">Estado Térmico:</span>
-                        <span class="font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md">Normotermia</span>
-                    </div>
+                <div class="w-full border-t border-slate-50 pt-4 flex justify-between items-center text-xs">
+                    <span class="text-slate-400 font-semibold">Rango Normotermia:</span>
+                    <span class="font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md border border-green-100">36.6°C - 37.2°C</span>
                 </div>
             </div>
         </div>
@@ -113,23 +168,87 @@
 
     <script>
         const BACKEND_URL = ""; 
-        let ecgChart, tempChart;
+        let ecgChart;
+        let corrienteTemperatura = 36.7; // Valor por defecto
 
         document.getElementById('nombrePaciente').addEventListener('input', (e) => {
             document.getElementById('saludoNombre').innerText = e.target.value || "Paciente";
         });
 
+        // FUNCIÓN PARA DIBUJAR EL DIAL DEL TERMOSTATO (Aguja y Escala 20°C a 45°C)
+        function dibujarTermostato(temp) {
+            const canvas = document.getElementById('thermostatDial');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const r = 85;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Arco de fondo (Gris claro)
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI);
+            ctx.strokeStyle = '#E2E8F0';
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // 2. Arco de progreso térmico (Azul a Rojo Gradiente)
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI);
+            let gradiente = ctx.createLinearGradient(0, cy, canvas.width, cy);
+            gradiente.addColorStop(0, '#3B82F6'); // Azul frío
+            gradiente.addColorStop(0.5, '#10B981'); // Verde óptimo
+            gradiente.addColorStop(1, '#EF4444'); // Rojo caliente
+            ctx.strokeStyle = gradiente;
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // 3. Calcular ángulo para la temperatura actual (Mapeo de 20°C a 45°C)
+            const minTemp = 20;
+            const maxTemp = 45;
+            let porcentaje = (temp - minTemp) / (maxTemp - minTemp);
+            porcentaje = Math.max(0, Math.min(1, porcentaje)); // Limitar entre 0 y 1
+            let anguloAguja = 0.75 * Math.PI + porcentaje * (1.5 * Math.PI);
+
+            // 4. Dibujar la Aguja Indicadora (Línea elegante con punta)
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(anguloAguja);
+            
+            ctx.beginPath();
+            ctx.moveTo(0, 4);
+            ctx.lineTo(r - 15, 0); // Cuerpo de la aguja hacia el borde
+            ctx.lineTo(0, -4);
+            ctx.fillStyle = '#1E293B';
+            ctx.fill();
+            
+            // Centro de la aguja
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1E293B';
+            ctx.fill();
+            ctx.restore();
+
+            // 5. Textos de límites de escala en el Dial
+            ctx.font = 'bold 11px Plus Jakarta Sans';
+            ctx.fillStyle = '#94A3B8';
+            ctx.fillText("20°C", cx - 75, cy + 65);
+            ctx.fillText("45°C", cx + 45, cy + 65);
+        }
+
         function generarDatosRespaldo() {
-            let tiempo = [], voltaje = [], temperatura = [];
+            let tiempo = [], voltaje = [];
             for (let i = 0; i < 150; i++) {
                 let t = i * 0.02;
                 tiempo.push(t.toFixed(2));
                 let v = 0.4 * Math.sin(2 * Math.PI * 1.2 * t);
                 if (i % 40 === 0) v += 1.4;
                 voltaje.push(v + (Math.random() - 0.5) * 0.04);
-                temperatura.push((36.6 + Math.random() * 0.2).toFixed(1));
             }
-            return { tiempo, voltaje, temperatura };
+            return { tiempo, voltaje };
         }
 
         function inicializarGraficas() {
@@ -149,19 +268,7 @@
                 }
             });
 
-            const ctxTemp = document.getElementById('chartTemp').getContext('2d');
-            tempChart = new Chart(ctxTemp, {
-                type: 'line',
-                data: { labels: respaldo.tiempo, datasets: [{
-                    label: 'Temp (°C)', data: respaldo.temperatura,
-                    borderColor: '#3B82F6', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.2
-                }]},
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { display: false }, y: { display: false } }
-                }
-            });
+            dibujarTermostato(corrienteTemperatura);
         }
 
         async function refrescarDatosDashboard() {
@@ -170,19 +277,28 @@
                 if (response.ok) {
                     const data = await response.json();
                     
+                    // Actualizar textos digitales
                     document.getElementById('liveTemp').innerText = data.temp_actual;
                     document.getElementById('liveBPM').innerText = data.bpm;
                     
+                    // Ajustar velocidad de la animación del corazón LED según los BPM reales
+                    const duracionLatido = (60 / data.bpm).toFixed(2);
+                    document.getElementById('heartBeater').style.animationDuration = `${duracionLatido}s`;
+                    
+                    // Actualizar gráfica de ECG
                     ecgChart.data.labels = data.tiempo;
                     ecgChart.datasets[0].data = data.voltaje;
                     ecgChart.update();
 
-                    tempChart.data.labels = data.tiempo;
-                    tempChart.datasets[0].data = data.temperatura;
-                    tempChart.update();
+                    // Redibujar aguja del termostato con el valor actual
+                    corrienteTemperatura = data.temp_actual;
+                    dibujarTermostato(corrienteTemperatura);
                 }
             } catch (error) {
-                console.log("Servidor en Render despertando... utilizando flujo local continuo.");
+                // Si Render está en reposo, sigue dibujando el termostato dinámico localmente
+                corrienteTemperatura = (36.6 + Math.random() * 0.2);
+                document.getElementById('liveTemp').innerText = corrienteTemperatura.toFixed(1);
+                dibujarTermostato(corrienteTemperatura);
             }
         }
 
@@ -229,7 +345,7 @@
         window.onload = () => {
             inicializarGraficas();
             refrescarDatosDashboard();
-            setInterval(refrescarDatosDashboard, 2500);
+            setInterval(refrescarDatosDashboard, 2000);
         };
     </script>
 </body>
