@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring ECG Dashboard</title>
+    <title>Panel de Monitoreo ECG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -72,17 +72,17 @@
         
         <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
             <div class="flex items-center bg-white p-1.5 rounded-full border border-slate-100 shadow-sm w-max">
-                <button class="px-6 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold shadow-md shadow-slate-900/10">Dashboard</button>
+                <button class="px-6 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold shadow-md shadow-slate-900/10">Panel de Control</button>
             </div>
             
             <div class="flex items-center gap-3">
-                <input type="text" id="nombrePaciente" value=" " class="px-5 py-2.5 rounded-full border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" placeholder="Nombre Paciente">
+                <input type="text" id="nombrePaciente" value="" class="px-5 py-2.5 rounded-full border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" placeholder="Nombre Paciente">
                 <span id="fechaActual" class="text-sm font-bold text-slate-500 bg-white border border-slate-100 px-5 py-2.5 rounded-full shadow-sm"></span>
             </div>
         </header>
-(
+
         <div class="mb-8">
-            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Hola, <span id="saludoNombre">      </span></h2>
+            <h2 id="contenedorSaludo" class="text-3xl font-extrabold text-slate-900 tracking-tight">¡Hola! <span id="saludoNombre" class="text-blue-600">Comenzar mediciones</span></h2>
             <p class="text-slate-500 font-medium mt-1">Monitoreo de señales vitales: ECG (actividad eléctrica del corazón) & Termómetro (temperatura corporal).</p>
         </div>
 
@@ -107,8 +107,8 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-100 pt-4">
                     <div>
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Heart Rate</p>
-                        <p class="text-xl font-extrabold text-slate-900 mt-0.5"><span id="liveBPM">72</span> <span class="text-sm font-semibold text-slate-400">BPM</span></p>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Frecuencia Cardíaca</p>
+                        <p class="text-xl font-extrabold text-slate-900 mt-0.5"><span id="liveBPM">72</span> <span class="text-sm font-semibold text-slate-400">LPM</span></p>
                     </div>
                     <div>
                         <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Ritmo QRS</p>
@@ -116,7 +116,7 @@
                     </div>
                     <div class="col-span-2 md:col-span-1">
                         <button onclick="descargarReporte()" class="w-full text-xs font-bold bg-blue-50 text-blue-600 py-2.5 px-4 rounded-xl hover:bg-blue-100 border border-blue-100 transition-all">
-                             Download Report (.CSV)
+                             Descargar Reporte (.CSV)
                         </button>
                     </div>
                 </div>
@@ -126,9 +126,9 @@
                 <div class="w-full flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                        <h3 class="font-bold text-slate-900 text-base">Thermostat Indicator</h3>
+                        <h3 class="font-bold text-slate-900 text-base">Indicador de Temperatura</h3>
                     </div>
-                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Core Temp</span>
+                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">Temp. Central</span>
                 </div>
                 
                 <div class="flex items-center justify-center gap-8 my-auto w-full h-64">
@@ -141,7 +141,7 @@
                             <span id="liveTemp" class="text-5xl font-black text-slate-900 tracking-tight">36.7</span>
                             <span class="text-xl font-bold text-slate-400">°C</span>
                         </div>
-                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-1">Current Temperature</p>
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-1">Temperatura Actual</p>
                         <div class="mt-4 p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
                             <p class="text-[10px] text-slate-400 font-bold uppercase">Escala</p>
                             <p class="text-xs font-semibold text-slate-600">Mín: 20°C / Máx: 45°C</p>
@@ -166,11 +166,18 @@
         function establecerFechaActual() {
             const opciones = { day: 'numeric', month: 'short', year: 'numeric' };
             const hoy = new Date();
-            document.getElementById('fechaActual').innerText = hoy.toLocaleDateString('en-GB', opciones);
+            document.getElementById('fechaActual').innerText = hoy.toLocaleDateString('es-ES', opciones);
         }
 
         document.getElementById('nombrePaciente').addEventListener('input', (e) => {
-            document.getElementById('saludoNombre').innerText = e.target.value || "Paciente";
+            const valor = e.target.value.trim();
+            const contenedor = document.getElementById('contenedorSaludo');
+            
+            if (valor === "") {
+                contenedor.innerHTML = '¡Hola! <span id="saludoNombre" class="text-blue-600">Comenzar mediciones</span>';
+            } else {
+                contenedor.innerHTML = 'Hola, <span id="saludoNombre">' + e.target.value + '</span>';
+            }
         });
 
         function dibujarTermometroVertical(temp) {
@@ -283,7 +290,7 @@
                             display: true,
                             title: {
                                 display: true,
-                                text: 'Time (s)',
+                                text: 'Tiempo (s)',
                                 color: '#64748B',
                                 font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
                             },
@@ -295,7 +302,7 @@
                             max: 2.0, 
                             title: {
                                 display: true,
-                                text: 'ECG Voltage (mV)',
+                                text: 'Voltaje ECG (mV)',
                                 color: '#64748B',
                                 font: { size: 11, weight: 'bold', family: 'Plus Jakarta Sans' }
                             },
